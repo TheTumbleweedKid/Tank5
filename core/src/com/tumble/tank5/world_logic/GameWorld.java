@@ -2,8 +2,8 @@ package com.tumble.tank5.world_logic;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.tumble.tank5.world_logic.location.Position;
-import com.tumble.tank5.world_logic.tiles.Air;
+import com.tumble.tank5.tiles.Air;
+import com.tumble.tank5.tiles.Tile;
 
 /**
  * Stores and provides access to the inhabitants, Tiles and dimensions of the
@@ -139,13 +139,15 @@ public class GameWorld {
 	}
 
 	/**
-	 * Returns a new instance (except in the case of the singleton <code>Air</code>) <code>Tile</code>
-	 * from a given <code>char</code>. Throws an <code>IllegalArgumentException</code> if it is
-	 * unregistered.
+	 * Returns a new instance (except in the case of the singleton <code>Air</code>)
+	 * <code>Tile</code> from a given <code>char</code>. Throws an
+	 * <code>IllegalArgumentException</code> if it is unregistered.
 	 * 
-	 * @param c the <code>char</code> (used to decide what kind of <code>Tile</code> to return).
+	 * @param c the <code>char</code> (used to decide what kind of <code>Tile</code>
+	 *          to return).
 	 * 
-	 * @return a new <code>Tile</code> of a type determined by the given <code>char</code>.
+	 * @return a new <code>Tile</code> of a type determined by the given
+	 *         <code>char</code>.
 	 */
 	private Tile tileFromChar(char c) {
 		switch (c) {
@@ -164,54 +166,60 @@ public class GameWorld {
 	 * 
 	 * @param position the location to look for a <code>Tile</code> at.
 	 * 
-	 * @return the <code>Tile</code> found at the location, or <code>null</code> if nothing was
-	 * found (due to invalid coordinates, unloaded game world, etc.).
+	 * @return the <code>Tile</code> found at the location, or <code>null</code> if
+	 *         nothing was found (due to invalid coordinates, unloaded game world,
+	 *         etc.).
 	 */
 	public Tile getTile(Position position) {
 		return getTile(position.x, position.y, position.z);
 	}
 	
 	/**
-	 * Gets the <code>Tile</code> at a given location in world-coordinates (as opposed to
-	 * indices of the <code>Tile</code> in the <code>tiles</code> array.
+	 * Gets the <code>Tile</code> at a given location in world-coordinates (as
+	 * opposed to indices of the <code>Tile</code> in the <code>tiles</code> array.
 	 * 
 	 * @param x the x-coordinate to look for a <code>Tile</code> at.
 	 * @param y the y-coordinate to look for a <code>Tile</code> at.
 	 * @param z the z-coordinate to look for a <code>Tile</code> at.
 	 * 
-	 * @return the <code>Tile</code> found at the location, or <code>null</code> if nothing was
-	 * found (due to invalid coordinates, unloaded game world, etc.).
+	 * @return the <code>Tile</code> found at the location, or <code>null</code> if
+	 *         nothing was found (due to invalid coordinates, unloaded game world,
+	 *         etc.).
 	 */
 	public Tile getTile(double x, double y, double z) {
 		if (!loaded || outOfBounds(x, y, z)) return null;
 		
-		return tiles[(int)(z / Tile.TILE_SIZE)][(int)(y /Tile.TILE_SIZE)][(int)(x / Tile.TILE_SIZE)];
+		return tiles[(int)(z / Tile.TILE_SIZE)][(int)(y / Tile.TILE_SIZE)][(int)(x / Tile.TILE_SIZE)];
 	}
 	
 	/**
-	 * Check whether a given <code>Position</code> represents a valid <code>Tile</code> in the
-	 * <code>tiles</codes> array (if it has been loaded!), via
-	 * {@link GameWorld#outOfBounds(double, double, double)}.
+	 * Check whether a given <code>Position</code> represents a valid
+	 * <code>Tile</code> in the <code>tiles</code> array (if it has been loaded!),
+	 * via {@link GameWorld#outOfBounds(double, double, double)}.
 	 * 
 	 * @param position the <code>Position</code> to test.
 	 * 
-	 * @return <code>true</code> found at the <code>Position</code>, or <code>false</code> if the
-	 * location was out of bounds (due to invalid coordinates, unloaded game world, etc.).
+	 * @return <code>true</code> found at the <code>Position</code>, or
+	 *         <code>false</code> if the location was out of bounds (due to invalid
+	 *         coordinates, unloaded game world, etc.).
 	 */
 	public boolean outOfBounds(Position position) {
 		return outOfBounds(position.x, position.y, position.z);
 	}
-	
+
 	/**
-	 * Check whether a given location in world-coordinates represents a valid <code>Tile</code> in
-	 * the <code>tiles</codes> array (if it has been loaded!).
+	 * Check whether a given location in world-coordinates represents a valid
+	 * <code>Tile</code> in the <code>tiles</code> array (if it has been loaded!).
 	 * 
 	 * @param x the x-coordinate of the location to test.
+	 * 
 	 * @param y the y-coordinate of the location to test.
+	 * 
 	 * @param z the z-coordinate of the location to test.
 	 * 
-	 * @return <code>true</code> found at the location, or <code>false</code> if the location was
-	 * out of bounds (due to invalid coordinates, unloaded game world, etc.).
+	 * @return <code>true</code> found at the location, or <code>false</code> if the
+	 *         location was out of bounds (due to invalid coordinates, unloaded game
+	 *         world, etc.).
 	 */
 	public boolean outOfBounds(double x, double y, double z) {
 		if (!loaded) return false;
