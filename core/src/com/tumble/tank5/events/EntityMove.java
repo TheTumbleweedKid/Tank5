@@ -4,6 +4,12 @@ import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.world_logic.DirectionVector;
 import com.tumble.tank5.world_logic.GameWorld;
 
+/**
+ * Suggest a move for an <code>Entity</code> to perform in the next movement round.
+ * 
+ * @author Tumbl
+ *
+ */
 public class EntityMove implements Input {
 	private Entity entity;
 	private DirectionVector moveIn;

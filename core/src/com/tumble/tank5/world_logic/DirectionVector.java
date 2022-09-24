@@ -122,17 +122,40 @@ public class DirectionVector {
 	}
 	
 	/**
-	 * Return a new <code>DirectionVector</code> that is a combination of this
+	 * Create a new <code>DirectionVector</code> that is a combination of this
+	 * <code>DirectionVector</code> and another (via
+	 * {@link DirectionVector#combine(int, int, int)}).
+	 * 
+	 * @param other - the <code>DirectionVector</code> to combine with this one.
+	 * 
+	 * @return the combined <code>DirectionVector</code>.
+	 */
+	public DirectionVector combine(DirectionVector other) {
+		return combine(other.x, other.y, other.z);
+	}
+	
+	/**
+	 * Create a new <code>DirectionVector</code> that is a combination of this
 	 * <code>DirectionVector</code> and some given x-, y- and z-components.
 	 * 
-	 * @param x the x-component to add (number of <code>Tile</code>s).
-	 * @param y the y-component to add (number of <code>Tile</code>s).
-	 * @param z the z-component to add (number of <code>Tile</code>s).
+	 * @param x - the x-component to add (number of <code>Tile</code>s).
+	 * @param y - the y-component to add (number of <code>Tile</code>s).
+	 * @param z - the z-component to add (number of <code>Tile</code>s).
 	 * 
 	 * @return the combined <code>DirectionVector</code>.
 	 */
 	public DirectionVector combine(int x, int y, int z) {
 		return new DirectionVector(this.x + x, this.y + y, this.z + z);
+	}
+	
+	/**
+	 * Create a new <code>DirectionVector</code> that represents the opposite
+	 * direction to this one.
+	 * 
+	 * @return the reverse of this <code>DirectionVector</code>.
+	 */
+	public DirectionVector reverse() {
+		return new DirectionVector(-x, -y, -z);
 	}
 
 	@Override

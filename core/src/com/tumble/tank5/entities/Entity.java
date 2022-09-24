@@ -1,9 +1,11 @@
 package com.tumble.tank5.entities;
 
+import com.tumble.tank5.tiles.StairCase;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.IDManager;
 import com.tumble.tank5.world_logic.DirectionVector;
+import com.tumble.tank5.world_logic.DirectionVector.Direction;
 import com.tumble.tank5.world_logic.Game;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
@@ -22,8 +24,8 @@ import com.tumble.tank5.world_logic.Position;
 public abstract class Entity {
 	private int entityID;
 
-	protected Tile currentTile;
-	protected DirectionVector lastMove = new DirectionVector(0, 0, 0);
+	protected Position currentPos;
+	protected DirectionVector plannedMove = new DirectionVector(0, 0, 0);
 	
 	protected int health;
 	protected boolean shouldRemove;
@@ -70,7 +72,39 @@ public abstract class Entity {
 		shouldRemove = false;
 	}
 	
-	public abstract boolean addMove(DirectionVector dir, GameWorld gW);
+	public Position getPlannedPosition() {
+		return currentPos.move(plannedMove);
+	}
+	
+	public boolean addMove(DirectionVector move, GameWorld gW) {
+		if (move == null || gW == null) return false;
+		
+		DirectionVector newMove = plannedMove.combine(move);
+		if (newMove.equals(plannedMove)) return false;
+		
+		Direction newDir = Direction.asEnum(newMove);
+		Position newPos = currentPos.move(newMove);
+		
+		Tile currentTile = gW.getTile(currentPos);
+		
+		if (currentTile.isStairCase()) {
+			newPos = newPos.move(((StairCase) currentTile).getHeightChange(newMove));
+		}
+
+		Tile newTile = gW.getTile(newPos);
+		
+		if (newDir != Direction.NONE) {
+			if (newTile.isObstruction(newMove)) return false;
+			
+			if (newDir == Direction.UP || newDir == Direction.DOWN) {
+				if (!currentTile.isLadder()) return false;
+			} else if () {
+				
+			}
+		}
+		
+		return true;
+	}
 
 	public abstract boolean addAttack(GameWorld gW, Position... positions);
 

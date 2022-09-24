@@ -16,7 +16,7 @@ public interface Input {
 	
 	/**
 	 * Apply this <code>Input</code> to the <code>GameWorld</code>, checking it is
-	 * is valid.
+	 * is valid. Should only be called by {@link
 	 * 
 	 * @param gW the <code>GameWorld</code> to apply this <code>Input</code> to.
 	 * 
