@@ -15,7 +15,7 @@ public class Air extends Tile {
 	public static Air AIR = new Air();
 	
 	private Air() {
-		
+		type = TileType.AIR;
 	}
 
 	@Override
@@ -31,11 +31,6 @@ public class Air extends Tile {
 	@Override
 	public void makeRubble(GameWorld gW) {
 		// Air can't be turned into rubble!
-	}
-
-	@Override
-	public boolean isClimable() {
-		return false;
 	}
 
 	@Override

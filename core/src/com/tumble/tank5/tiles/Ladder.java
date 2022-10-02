@@ -7,6 +7,8 @@ public class Ladder extends Tile {
 	private DirectionVector obstructiveDirection;
 	
 	public Ladder(int rotation) {
+		type = TileType.LADDER;
+		
 		switch (rotation) {
 		case 1:
 			obstructiveDirection = new DirectionVector(0, 1, 0);
@@ -29,11 +31,6 @@ public class Ladder extends Tile {
 
 	@Override
 	public boolean providesSupport() {
-		return true;
-	}
-
-	@Override
-	public boolean isClimable() {
 		return true;
 	}
 

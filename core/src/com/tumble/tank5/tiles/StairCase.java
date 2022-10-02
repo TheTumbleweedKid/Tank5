@@ -8,6 +8,8 @@ public class StairCase extends Tile {
 	public final DirectionVector upDirection, downDirection;
 	
 	public StairCase(DirectionVector up) {
+		type = TileType.STAIRS;
+		
 		upDirection = validate(up);
 		downDirection = upDirection.reverse();
 	}
@@ -35,11 +37,6 @@ public class StairCase extends Tile {
 
 	@Override
 	public boolean providesSupport() {
-		return false;
-	}
-
-	@Override
-	public boolean isClimable() {
 		return false;
 	}
 

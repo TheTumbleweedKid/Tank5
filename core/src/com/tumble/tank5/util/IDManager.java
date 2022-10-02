@@ -54,7 +54,7 @@ public class IDManager {
 	 * @return an <code>int</code> for the registered <code>Game</code> to use as
 	 *         its <code>gameID</code>.
 	 * 
-	 * @throws <code>GameError</code> if the given <code>Game</code> is
+	 * @throws GameError if the given <code>Game</code> is
 	 * <code>null</code> or has already been registered with the
 	 * <code>IDManager</code>.
 	 */
@@ -82,7 +82,7 @@ public class IDManager {
 	 *         number just goes unused - aside from slowly filling up the possible
 	 *         Integer values...).
 	 * 
-	 * @throws <code>GameError</code> if the <code>Game</code> is <code>null</code>,
+	 * @throws GameError if the <code>Game</code> is <code>null</code>,
 	 * client-side or unregistered.
 	 */
 	public static int nextID(Game game) {
@@ -110,7 +110,7 @@ public class IDManager {
 	 * 
 	 * @param id   - the ID number to register.
 	 * 
-	 * @throws <code>GameError</code> if:
+	 * @throws GameError if:
 	 * <li>the <code>Game</code> is <code>null</code> or unregistered</li>
 	 * <li>the <code>Game</code> is on the server-side (hence should be generating
 	 * its own ID numbers via {@link IDManager#nextID(Game)} rather than using
@@ -142,7 +142,7 @@ public class IDManager {
 	 * @return <code>true</code> if the ID number has already been used for the
 	 *         <code>Game</code>, or <code>false</code> if it hasn't.
 	 * 
-	 * @throws <code>GameError</code> if the given <code>Game</code> is
+	 * @throws GameError if the given <code>Game</code> is
 	 * <code>null</code> or unregistered.
 	 */
 	public static boolean alreadyUsedID(Game game, Integer id) {

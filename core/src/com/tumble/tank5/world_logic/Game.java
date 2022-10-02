@@ -33,6 +33,17 @@ public class Game {
 		return acceptingInput;
 	}
 	
+	public boolean addInput(Input i) {
+		if (i == null) return false;
+		
+		if (!started) {
+			// accept special inputs (add player, player-quit, NPC-spawn, etc.).
+			return false;
+		}
+		
+		return acceptingInput && i.apply(world);
+	}
+	
 	public void update() {
 		
 	}

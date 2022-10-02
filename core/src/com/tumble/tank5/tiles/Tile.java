@@ -12,6 +12,15 @@ import com.tumble.tank5.world_logic.DirectionVector;
 public abstract class Tile {
 	public static final double TILE_SIZE = 10.0;
 
+	protected TileType type;
+
+	public enum TileType {
+		AIR,
+		WALL,
+		LADDER,
+		STAIRS
+	}
+	
 	/**
 	 * Whether an object can move into the Tile in a given direction - i.e., via a
 	 * given <code>DirectionVector</code> - (the obstructiveness may depend on the
@@ -28,15 +37,13 @@ public abstract class Tile {
 
 	public abstract boolean providesSupport();
 
-	/**
-	 * 
-	 * @return
-	 */
-	public abstract boolean isClimable();
-
 	public abstract void makeRubble(GameWorld gW);
 
 	public abstract boolean isRubble();
 
+	public TileType getType() {
+		return type;
+	}
+	
 	public abstract String toString();
 }

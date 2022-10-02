@@ -16,9 +16,9 @@ public interface Input {
 	
 	/**
 	 * Apply this <code>Input</code> to the <code>GameWorld</code>, checking it is
-	 * is valid. Should only be called by {@link
+	 * is valid. Should only be called by {@link Game#addInput(Input)}.
 	 * 
-	 * @param gW the <code>GameWorld</code> to apply this <code>Input</code> to.
+	 * @param gW - the <code>GameWorld</code> to apply this <code>Input</code> to.
 	 * 
 	 * @return <code>true</code> if the <code>Input</code> was valid (applied
 	 *         successfully), or <code>false</code> if it wasn't.

@@ -87,7 +87,7 @@ public class GameWorld {
 	 * 
 	 * @param map - the map <code>String</code> to load the world from.
 	 * 
-	 * @throws <code>IllegalArgumentException</code> if the given map has
+	 * @throws IllegalArgumentException if the given map has
 	 * inconsistent or invalid dimensions, or if an unregistered tile-character is
 	 * encountered.
 	 */
@@ -160,14 +160,15 @@ public class GameWorld {
 
 	/**
 	 * Returns a new instance (except in the case of the singleton <code>Air</code>)
-	 * <code>Tile</code> from a given <code>char</code>. Throws an
-	 * <code>IllegalArgumentException</code> if it is unregistered.
+	 * <code>Tile</code> from a given <code>char</code>.
 	 * 
 	 * @param c - the <code>char</code> (used to decide what kind of
 	 *          <code>Tile</code> to return).
 	 * 
 	 * @return a new <code>Tile</code> of a type determined by the given
 	 *         <code>char</code>.
+	 * 
+	 * @throws IllegalArgumentException if the <code>char</code> is unregistered.
 	 */
 	private Tile tileFromChar(char c) {
 		switch (c) {
@@ -178,6 +179,19 @@ public class GameWorld {
 		default:
 			throw new IllegalArgumentException("Unknown tile character '" + c + "' detected!");
 		}
+	}
+	
+	/**
+	 * Find out whether a given <code>Entity</code> exists in the
+	 * <code>GameWorld</code>.
+	 * 
+	 * @param e - the <code>Entity</code> to look for.
+	 * 
+	 * @return <code>true</code> if the <code>Entity</code> was found in this
+	 *         <code>GameWorld</code>, or <code>false</code> if it wasn't.
+	 */
+	public boolean hasEntity(Entity e) {
+		return entities.contains(e);
 	}
 
 	/**

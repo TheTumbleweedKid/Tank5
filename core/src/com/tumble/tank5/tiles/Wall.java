@@ -5,6 +5,10 @@ import com.tumble.tank5.world_logic.DirectionVector;
 
 public class Wall extends Tile {
 
+	public Wall() {
+		type = TileType.WALL;
+	}
+	
 	@Override
 	public boolean isObstruction(DirectionVector dir) {
 		return true;
@@ -13,11 +17,6 @@ public class Wall extends Tile {
 	@Override
 	public boolean providesSupport() {
 		return true;
-	}
-
-	@Override
-	public boolean isClimable() {
-		return false;
 	}
 
 	@Override
