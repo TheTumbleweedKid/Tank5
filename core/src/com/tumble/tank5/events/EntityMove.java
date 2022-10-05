@@ -5,16 +5,19 @@ import com.tumble.tank5.world_logic.DirectionVector;
 import com.tumble.tank5.world_logic.GameWorld;
 
 /**
- * Suggest a move for an <code>Entity</code> to perform in the next movement round.
+ * Represents a suggested movement input for an <code>Entity</code> to perform
+ * in a <code>Round</code>.
  * 
  * @author Tumbl
  *
  */
-public class EntityMove implements Input {
+public class EntityMove extends Input {
 	private Entity entity;
 	private DirectionVector moveIn;
 	
-	public EntityMove(Entity entity, DirectionVector moveIn) {
+	public EntityMove(long time, Entity entity, DirectionVector moveIn) {
+		this.time = time;
+		
 		this.entity = entity;
 		this.moveIn = moveIn;
 	}

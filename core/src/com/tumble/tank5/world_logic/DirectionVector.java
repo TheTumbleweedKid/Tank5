@@ -139,7 +139,9 @@ public class DirectionVector {
 	 * <code>DirectionVector</code> and some given x-, y- and z-components.
 	 * 
 	 * @param x - the x-component to add (number of <code>Tile</code>s).
+	 * 
 	 * @param y - the y-component to add (number of <code>Tile</code>s).
+	 * 
 	 * @param z - the z-component to add (number of <code>Tile</code>s).
 	 * 
 	 * @return the combined <code>DirectionVector</code>.
@@ -181,6 +183,13 @@ public class DirectionVector {
 		return hash;
 	}
 
+	/**
+	 * Caps a given component-delta to values (i.e., lengths) of either -1, 0 or 1.
+	 * 
+	 * @param delta - the component to ensure length of.
+	 * 
+	 * @return a valid version of the component.
+	 */
 	private static int ensureLength(int delta) {
 		return (int) Math.min(Math.abs(delta), 1) * (int) Math.signum(delta);
 	}

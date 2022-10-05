@@ -4,7 +4,14 @@ import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
-public class EntityAction implements Input {
+/**
+ * Represents a suggested action input (either shooting, switching weapon or
+ * reloading) for an <code>Entity</code> to perform in a <code>Round</code>.
+ * 
+ * @author Tumbl
+ *
+ */
+public class EntityAction extends Input {
 	private Entity entity;
 	private Action action;
 	private Position[] positions;
@@ -15,7 +22,9 @@ public class EntityAction implements Input {
 		RELOAD
 	}
 	
-	public EntityAction(Entity entity, Action action, Position... positions) {
+	public EntityAction(long time, Entity entity, Action action, Position... positions) {
+		this.time = time;
+		
 		this.entity = entity;
 		this.action = action;
 		this.positions = positions;

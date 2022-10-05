@@ -4,9 +4,17 @@ import org.junit.jupiter.api.Test;
 
 import com.tumble.tank5.world_logic.Round;
 
-public class RoundDurationTest {
+/**
+ * Tests to ensure that the <code>Round</code> durations remain consistent
+ * (i.e., the doubles returned by {@link Math#sin(double)} are sufficiently far
+ * away from point of rounding ambiguity).
+ * 
+ * @author Tumbl
+ *
+ */
+public class RoundDurationTests {
 	/**
-	 * Test that <code>Round</code> durations remain consistent for a constant
+	 * Tests that <code>Round</code> durations remain consistent for a constant
 	 * amplitude of 400ms, starting phase of 0, period of 15 turns,
 	 * and a variable base duration ranging (in steps of 50ms) from 500 to 3500ms.
 	 * 
@@ -20,7 +28,7 @@ public class RoundDurationTest {
 	}
 	
 	/**
-	 * Test that <code>Round</code> durations remain consistent for a constant
+	 * Tests that <code>Round</code> durations remain consistent for a constant
 	 * base duration of 1000ms, period of 15 turns, starting phase of 0,
 	 * and a variable amplitude ranging (in steps of 50ms) from 50 to 1000ms.
 	 * 
@@ -34,7 +42,7 @@ public class RoundDurationTest {
 	}
 	
 	/**
-	 * Test that <code>Round</code> durations remain consistent for a constant base
+	 * Tests that <code>Round</code> durations remain consistent for a constant base
 	 * duration of 1000ms, amplitude of 400ms, starting phase of 0, and a variable
 	 * period ranging (in steps of 1 turn) from 5 to 50 turns. Note that
 	 * <b>multiples of 12 must be skipped</b>, because these lead to
@@ -52,7 +60,7 @@ public class RoundDurationTest {
 	}
 	
 	/**
-	 * Test that <code>Round</code> durations remain consistent for a constant base
+	 * Tests that <code>Round</code> durations remain consistent for a constant base
 	 * duration of 1000ms, amplitude of 400ms, period of 15, and a variable
 	 * starting phase ranging (in steps of 1 turn) from 0 to 14 (i.e., period - 1) turns. 
 	 * 

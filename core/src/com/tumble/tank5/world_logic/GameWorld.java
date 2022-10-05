@@ -87,9 +87,9 @@ public class GameWorld {
 	 * 
 	 * @param map - the map <code>String</code> to load the world from.
 	 * 
-	 * @throws IllegalArgumentException if the given map has
-	 * inconsistent or invalid dimensions, or if an unregistered tile-character is
-	 * encountered.
+	 * @throws IllegalArgumentException if the given map has inconsistent or invalid
+	 *                                  dimensions, or if an unregistered
+	 *                                  tile-character is encountered.
 	 */
 	private void loadWorld(String newWorld) {
 		if (validWorldDimensions(newWorld)) {
@@ -182,7 +182,7 @@ public class GameWorld {
 	}
 	
 	/**
-	 * Find out whether a given <code>Entity</code> exists in the
+	 * Finds out whether a given <code>Entity</code> exists in this
 	 * <code>GameWorld</code>.
 	 * 
 	 * @param e - the <code>Entity</code> to look for.
@@ -195,7 +195,8 @@ public class GameWorld {
 	}
 
 	/**
-	 * Gets the <code>Tile</code> at a given <code>Position</code> (via
+	 * Finds the <code>Tile</code> at a given <code>Position</code> in this
+	 * <code>GameWorld</code> (via
 	 * {@link GameWorld#getTile(double, double, double)}).
 	 * 
 	 * @param position - the location to look for a <code>Tile</code> at.
