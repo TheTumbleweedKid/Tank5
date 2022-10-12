@@ -8,6 +8,7 @@ import com.tumble.tank5.util.IDManager;
 import com.tumble.tank5.world_logic.DirectionVector;
 import com.tumble.tank5.world_logic.DirectionVector.Direction;
 import com.tumble.tank5.world_logic.Game;
+import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
@@ -22,13 +23,12 @@ import com.tumble.tank5.world_logic.Position;
  * @author Tumbl
  *
  */
-public abstract class Entity {
+public abstract class Entity extends GameObject {
 	private int entityID;
 
 	protected Position currentPos;
 	protected DirectionVector plannedMove = new DirectionVector(0, 0, 0);
 	
-	protected int health;
 	protected boolean shouldRemove;
 	
 	private boolean initialised = false;
@@ -54,7 +54,13 @@ public abstract class Entity {
 	 *                 <code>Entity</code>'s ID number should be registered with the
 	 *                 <code>IDManager</code>.
 	 * 
-	 * @throws GameError 
+	 * @throws GameError if:
+	 *                   <li><code>game</code> is <code>null</code></li>
+	 *                   <li>this <code>Entity</code> has already been initialised
+	 *                   by this method.</li>
+	 *                   <li><code>entityID</code> has already been registered (to
+	 *                   another <code>Entity</code>) with the
+	 *                   <code>IDManager</code> under this <code>Game</code>.</li>
 	 */
 	protected final void init(Integer entityID, Game game) {
 		if (game == null) {
@@ -73,6 +79,10 @@ public abstract class Entity {
 		initialised = true;
 		
 		shouldRemove = false;
+	}
+	
+	public final int getID() {
+		return initialised ? entityID : -1;
 	}
 	
 	/**

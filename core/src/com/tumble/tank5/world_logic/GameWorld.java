@@ -27,6 +27,8 @@ public class GameWorld {
 	private int[] worldDimensions = new int[3];
 	// Whether a map is currently loaded into the GameWorld.
 	private boolean loaded;
+	
+	private RubbleManager rubbleManager;
 
 	/**
 	 * Creates a <code>GameWorld</code> for a <code>Game</code> to take place in.
@@ -39,6 +41,12 @@ public class GameWorld {
 		entities = new HashSet<Entity>();
 
 		loaded = false;
+		
+		rubbleManager = new RubbleManager(this);
+	}
+	
+	public RubbleManager getRubbleManager() {
+		return rubbleManager;
 	}
 
 	/**
@@ -92,6 +100,8 @@ public class GameWorld {
 	 *                                  tile-character is encountered.
 	 */
 	private void loadWorld(String newWorld) {
+		loaded = false;
+		
 		if (validWorldDimensions(newWorld)) {
 			throw new IllegalArgumentException("Inconsistent/invalid map dimensions!");
 		}
@@ -120,7 +130,9 @@ public class GameWorld {
 		}
 
 		worldDimensions = new int[] { z, y, x };
-
+		
+		rubbleManager.clear();
+		
 		loaded = true;
 	}
 
@@ -192,6 +204,16 @@ public class GameWorld {
 	 */
 	public boolean hasEntity(Entity e) {
 		return entities.contains(e);
+	}
+	
+	public Entity getEntity(int id) {
+		for (Entity e : entities) {
+			if (e.getID() == id) {
+				return e;
+			}
+		}
+		
+		return null;
 	}
 
 	/**

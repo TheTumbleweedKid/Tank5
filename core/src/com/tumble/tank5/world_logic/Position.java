@@ -27,10 +27,11 @@ public class Position {
 	
 	/**
 	 * Returns a new <code>Position</code> that has been moved from the location of
-	 * this <code>Position</code> by a given <code>DirectionVector</code> (see {@link DirectionVector).
+	 * this <code>Position</code> by a given <code>DirectionVector</code> (see
+	 * {@link DirectionVector} for specifics of motion).
 	 * 
-	 * @param dir the <code>DirectionVector</code> to move from this <code>Position</code>
-	 *            in.
+	 * @param dir - the <code>DirectionVector</code> to move from this
+	 *            <code>Position</code> in.
 	 * 
 	 * @return the moved <code>Position</code>.
 	 */
