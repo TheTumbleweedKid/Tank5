@@ -1,8 +1,13 @@
 package com.tumble.tank5.world_logic;
 
+import com.tumble.tank5.tiles.Tile;
+
 /**
  * Stores a location in the game world (could be off the board) in
- * world-coordinates.
+ * world-coordinates. Note that 'world-coordinates' differ from
+ * '<code>Tile</code>-coordinates' in that <code>Tile</code>-coordinates are a
+ * special subset of world-coordinates (ones that have only integral components,
+ * corresponding to the centre of a <code>Tile</code>).
  * 
  * @author Tumble
  *
@@ -14,15 +19,60 @@ public class Position {
 	public final double x, y, z;
 	
 	/**
+	 * Constructs a new <code>Position</code> from some given world-coordinates.
 	 * 
-	 * @param x
-	 * @param y
-	 * @param z
+	 * @param x - the x-coordinate (east/west location) of the
+	 *          <code>Position</code>.
+	 * 
+	 * @param y - the y-coordinate (north/south location) of the
+	 *          <code>Position</code>.
+	 * 
+	 * @param z - the z-coordinate (altitude, 'z-layer') of the
+	 *          <code>Position</code>.
 	 */
 	public Position(double x, double y, double z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+	}
+	
+	/**
+	 * Gets the x-coordinate of this <code>Position</code> in <code>Tile</code>
+	 * coordinates. In other words, the x-coordinate of the <code>Tile</code> whose
+	 * centre lies closest to this <code>Position</code> (i.e, that this
+	 * <code>Position</code> lies within).
+	 * 
+	 * @return the east/west location of this <code>Position</code> (in integral
+	 *         <code>Tile</code>-sized units).
+	 */
+	public int getX() {
+		return (int) (x / Tile.TILE_SIZE);
+	}
+	
+	/**
+	 * Gets the y-coordinate of this <code>Position</code> in <code>Tile</code>
+	 * coordinates. In other words, the y-coordinate of the <code>Tile</code> whose
+	 * centre lies closest to this <code>Position</code> (i.e, that this
+	 * <code>Position</code> lies within).
+	 * 
+	 * @return the north/south location of this <code>Position</code> (in integral
+	 *         <code>Tile</code>-sized units).
+	 */
+	public int getY() {
+		return (int) (y / Tile.TILE_SIZE);
+	}
+	
+	/**
+	 * Gets the z-coordinate of this <code>Position</code> in <code>Tile</code>
+	 * coordinates. In other words, the z-coordinate of the <code>Tile</code> whose
+	 * centre lies closest to this <code>Position</code> (i.e, that this
+	 * <code>Position</code> lies within).
+	 * 
+	 * @return the altitude (z-layer) of this <code>Position</code> (in integral
+	 *         <code>Tile</code>-sized units).
+	 */
+	public int getZ() {
+		return (int) (y / Tile.TILE_SIZE);
 	}
 	
 	/**
@@ -37,5 +87,9 @@ public class Position {
 	 */
 	public Position move(DirectionVector dir) {
 		return new Position(x + dir.getX(), y + dir.getY(), z + dir.getZ());
+	}
+	
+	public boolean sameTile(Position other) {
+		return getX() == other.getX() && getY() == other.getY() && getZ() == other.getZ();
 	}
 }

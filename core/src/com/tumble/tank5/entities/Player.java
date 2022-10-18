@@ -8,7 +8,7 @@ public class Player extends Entity {
 	private String name;
 	
 	public Player(Game game, int id, String name) {
-		init(id, game);
+		super(id, game);
 		
 		this.name = name != null ? name : "";
 	}

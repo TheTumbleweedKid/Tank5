@@ -1,13 +1,14 @@
 package com.tumble.tank5.tiles;
 
 import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.Position;
 import com.tumble.tank5.world_logic.DirectionVector;
 
 public class Ladder extends Tile {
 	private DirectionVector obstructiveDirection;
 	
-	public Ladder(int rotation) {
-		type = TileType.LADDER;
+	public Ladder(Position pos, int rotation) {
+		super(TileType.LADDER, pos, 10, 1);
 		
 		switch (rotation) {
 		case 1:
@@ -30,26 +31,18 @@ public class Ladder extends Tile {
 	}
 
 	@Override
-	public boolean providesSupport() {
-		return true;
-	}
-
-	@Override
-	public void makeRubble(GameWorld gW) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean isRubble() {
-		// TODO Auto-generated method stub
+	public boolean stopsBullets() {
 		return false;
 	}
 
 	@Override
+	public boolean stopsFalling() {
+		return true;
+	}
+
+	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
+		return "#";
 	}
 
 }

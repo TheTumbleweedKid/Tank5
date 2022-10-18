@@ -3,12 +3,13 @@ package com.tumble.tank5.tiles;
 import com.tumble.tank5.world_logic.DirectionVector;
 import com.tumble.tank5.world_logic.DirectionVector.Direction;
 import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.Position;
 
 public class StairCase extends Tile {
 	public final DirectionVector upDirection, downDirection;
 	
-	public StairCase(DirectionVector up) {
-		type = TileType.STAIRS;
+	public StairCase(Position pos, DirectionVector up) {
+		super(TileType.STAIRS, pos, 20, 3);
 		
 		upDirection = validate(up);
 		downDirection = upDirection.reverse();
@@ -36,19 +37,12 @@ public class StairCase extends Tile {
 	}
 
 	@Override
-	public boolean providesSupport() {
-		return false;
+	public boolean stopsBullets() {
+		return true;
 	}
 
 	@Override
-	public void makeRubble(GameWorld gW) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean isRubble() {
-		// TODO Auto-generated method stub
+	public boolean stopsFalling() {
 		return false;
 	}
 

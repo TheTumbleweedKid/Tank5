@@ -1,13 +1,17 @@
 package com.tumble.tank5.world_logic;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.tiles.Air;
+import com.tumble.tank5.tiles.Ladder;
 import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.tiles.Wall;
 
 /**
  * Stores and provides access to each <code>Entity</code> and <code>Tile</code>
@@ -119,7 +123,12 @@ public class GameWorld {
 
 				x = 0;
 				for (char tile : row.toCharArray()) {
-					tiles[z][y][x] = tileFromChar(level.charAt(tile));
+					tiles[z][y][x] = tileFromChar(
+							level.charAt(tile),
+							new Position(
+									x * Tile.TILE_SIZE,
+									y * Tile.TILE_SIZE,
+									z * Tile.TILE_SIZE));
 					x++;
 				}
 
@@ -174,23 +183,36 @@ public class GameWorld {
 	 * Returns a new instance (except in the case of the singleton <code>Air</code>)
 	 * <code>Tile</code> from a given <code>char</code>.
 	 * 
-	 * @param c - the <code>char</code> (used to decide what kind of
-	 *          <code>Tile</code> to return).
+	 * @param c   - the <code>char</code> (used to decide what kind of
+	 *            <code>Tile</code> to return).
+	 * 
+	 * @param pos - the <code>Position</code> to spawn the <code>Tile</code> at (not
+	 *            used for <code>Air</code>).
 	 * 
 	 * @return a new <code>Tile</code> of a type determined by the given
 	 *         <code>char</code>.
 	 * 
 	 * @throws IllegalArgumentException if the <code>char</code> is unregistered.
 	 */
-	private Tile tileFromChar(char c) {
+	private Tile tileFromChar(char c, Position pos) {
 		switch (c) {
 		case ' ':
 			return Air.AIR;
 		case 'W':
+			return new Wall(pos);
 		case '#':
+			return new Ladder(pos, 0);
+		case '^':
 		default:
 			throw new IllegalArgumentException("Unknown tile character '" + c + "' detected!");
 		}
+	}
+	
+	public void setTile(Position position, Tile tile) {
+		if (position == null || outOfBounds(position) || tile == null)
+			return;
+		
+		tiles[position.getZ()][position.getY()][position.getX()] = tile;
 	}
 	
 	/**
@@ -217,18 +239,41 @@ public class GameWorld {
 	}
 
 	/**
+	 * Finds the <code>Entity</code> whose <code>Tile</code>-coordinates are the
+	 * same as those of a given <code>Position</code>.
+	 * 
+	 * @param position - the location to look for an <code>Entity</code> at.
+	 * 
+	 * @return the <code>Entity</code> found at the location, or <code>null</code>
+	 *         if nothing was found (due to invalid coordinates, unloaded game
+	 *         world, <code>null Position</code>, etc.).
+	 */
+	public Entity entityAt(Position position) {
+		if (position == null || outOfBounds(position))
+			return null;
+
+		for (Entity e : entities) {
+			if (position.sameTile(e.getPlannedPosition()))
+				return e;
+		}
+
+		return null;
+	}
+
+	/**
 	 * Finds the <code>Tile</code> at a given <code>Position</code> in this
 	 * <code>GameWorld</code> (via
-	 * {@link GameWorld#getTile(double, double, double)}).
+	 * {@link GameWorld#tileAt(double, double, double)}).
 	 * 
 	 * @param position - the location to look for a <code>Tile</code> at.
 	 * 
 	 * @return the <code>Tile</code> found at the location, or <code>null</code> if
 	 *         nothing was found (due to invalid coordinates, unloaded game world,
-	 *         etc.).
+	 *         <code>null Position</code>, etc.).
 	 */
-	public Tile getTile(Position position) {
-		return getTile(position.x, position.y, position.z);
+	public Tile tileAt(Position position) {
+		if (position == null) return null;
+		return tileAt(position.x, position.y, position.z);
 	}
 
 	/**
@@ -245,11 +290,46 @@ public class GameWorld {
 	 *         nothing was found (due to invalid coordinates, unloaded game world,
 	 *         etc.).
 	 */
-	public Tile getTile(double x, double y, double z) {
+	public Tile tileAt(double x, double y, double z) {
 		if (!loaded || outOfBounds(x, y, z))
 			return null;
 
 		return tiles[(int) (z / Tile.TILE_SIZE)][(int) (y / Tile.TILE_SIZE)][(int) (x / Tile.TILE_SIZE)];
+	}
+	
+	public List<GameObject> getObstructions(Position from, Position to, double time) {
+		List<GameObject> obstructions = new ArrayList<GameObject>();
+		
+		Tile fromTile = tileAt(from);
+		Tile toTile = tileAt(to);
+		
+		if (fromTile == null
+				|| toTile == null
+				|| fromTile == toTile
+				|| from.getZ() != to.getZ()) return obstructions;
+		
+		int xDiff = Math.abs(to.getX() - from.getX());
+		int yDiff = Math.abs(to.getY() - from.getY());
+		
+		if (xDiff > yDiff) {
+			if (yDiff == 0) {
+				double dx = Math.signum(to.getX() - from.getX()) * Tile.TILE_SIZE;
+				
+				for (int i = 0; i < xDiff; i++) {
+					Tile t = tileAt(from.x + i * dx, from.y, from.z);
+					
+					if (t != null && !t.stopsBullets()) {
+						obstructions.add(t);
+					}
+				}
+			}
+		} else {
+			if (xDiff != 0) {
+				
+			}
+		}
+		
+		return obstructions;
 	}
 
 	/**
@@ -261,9 +341,10 @@ public class GameWorld {
 	 * 
 	 * @return <code>true</code> found at the <code>Position</code>, or
 	 *         <code>false</code> if the location was out of bounds (due to invalid
-	 *         coordinates, unloaded game world, etc.).
+	 *         coordinates, unloaded game world, <code>null Position</code>, etc.).
 	 */
 	public boolean outOfBounds(Position position) {
+		if (position == null) return false;
 		return outOfBounds(position.x, position.y, position.z);
 	}
 

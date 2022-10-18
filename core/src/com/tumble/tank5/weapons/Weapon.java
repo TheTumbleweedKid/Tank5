@@ -1,7 +1,9 @@
 package com.tumble.tank5.weapons;
 
+import java.util.List;
 import java.util.Map;
 
+import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
@@ -13,24 +15,37 @@ import com.tumble.tank5.world_logic.Position;
  * @author Tumbl
  */
 public abstract class Weapon {
-	protected int lastFire, cooldown;
-	protected int magSize, magBullets, reserveBullets;
-
-	protected int reloadStart, reloadDuration;
-	protected boolean isReloading = false;
+	protected final int cooldown, reloadDuration, magSize;
+	protected int lastFire, reloadStart, magBullets, reserveBullets;
 	
+	private boolean isReloading;
+	
+	protected Weapon(int cooldown, int reloadDuration, int magSize, int reserveBullets) {
+		this.cooldown = cooldown;
+		lastFire = 0;
+
+		this.reloadDuration = reloadDuration;
+		reloadStart = 0;
+		
+		this.magSize = magSize;
+		magBullets = magSize;
+		this.reserveBullets = reserveBullets;
+		
+		isReloading = false;
+	}
+
 	public final boolean manualReload(int currentRound) {
 		if (!isReloading && magBullets < magSize && reserveBullets > 0) {
 			reloadStart = currentRound;
 			reserveBullets += magBullets;
 			magBullets = 0;
 			isReloading = true;
-			
+
 			return true;
 		}
 		return false;
 	}
-	
+
 	public final void updateReload(int currentRound) {
 		if (isReloading) {
 			if (currentRound - reloadStart >= reloadDuration) {
@@ -43,7 +58,7 @@ public abstract class Weapon {
 			isReloading = true;
 		}
 	}
-	
+
 	public final boolean ableToFire(int currentRound) {
 		return !isReloading && magBullets > 0 && currentRound - lastFire >= cooldown;
 	}
@@ -67,10 +82,20 @@ public abstract class Weapon {
 	 * 
 	 * @return a map of all the victims to their damages.
 	 */
-	public abstract Map<GameObject, Integer> fire(int ownerId, GameWorld gW, Position ... positions);
+	public abstract Map<GameObject, Integer> fire(
+			int ownerId,
+			GameWorld gW,
+			Position ... positions);
 	
 	
-	protected static void singleBullet(int ownerId, GameWorld gW, Position from, Position to, int damage, Map<GameObject, Integer> victims) {
-		
+	protected static void singleBullet(
+			int ownerId,
+			double time,
+			GameWorld gW,
+			Position from,
+			Position to,
+			int damage,
+			Map<GameObject, Integer> victims) {
+		List<GameObject> hits = gW.getObstructions(from, to, time);
 	}
 }

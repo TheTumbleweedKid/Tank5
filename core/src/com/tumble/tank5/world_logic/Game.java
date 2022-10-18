@@ -2,7 +2,9 @@ package com.tumble.tank5.world_logic;
 
 import java.util.Set;
 
+import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.events.Event;
 import com.tumble.tank5.events.Input;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.IDManager;
@@ -30,6 +32,8 @@ public class Game {
 	private boolean started = false;
 
 	private Round round;
+	
+	private Queue<Event> events;
 	
 	/**
 	 * Constructs a new <code>Game</code> (without loading a <code>GameWorld</code>
@@ -107,7 +111,16 @@ public class Game {
 	}
 	
 	public void update() {
-		
+		if (round.isFinished()) {
+			if (!events.isEmpty()) {
+				events.first().apply(world, events);
+				if (events.first().isFinished()) events.removeFirst();
+			} else {
+				round = round.next();
+				round.start();
+				// Note: events has already been emptied!
+			}
+		}
 	}
 	
 	@Override

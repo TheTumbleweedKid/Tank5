@@ -81,10 +81,10 @@ public class Round {
 
 		duration = baseDuration + (int) (amplitude * Math.sin(phase * 2 * Math.PI / period));
 	}
-	
+
 	/**
-	 * Constructs the next <code>Round</code> in a series, given the preceding one.
-	 * Only called by {@link Round#next()}.
+	 * Constructs the next <code>Round</code> in a series, given the preceding one,
+	 * but does not start it. Only called by {@link Round#next()}.
 	 * 
 	 * @param preceding - the <code>Round</code> before this one in the series.
 	 */

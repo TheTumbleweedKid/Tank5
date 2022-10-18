@@ -5,6 +5,7 @@ import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Tile.TileType;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.IDManager;
+import com.tumble.tank5.weapons.Weapon;
 import com.tumble.tank5.world_logic.DirectionVector;
 import com.tumble.tank5.world_logic.DirectionVector.Direction;
 import com.tumble.tank5.world_logic.Game;
@@ -25,26 +26,23 @@ import com.tumble.tank5.world_logic.Position;
  */
 public abstract class Entity extends GameObject {
 	private int entityID;
+	
+	private Weapon[] weapons;
+	private int weaponIndex;
 
-	protected Position currentPos;
+	protected Position startPos;
 	protected DirectionVector plannedMove = new DirectionVector(0, 0, 0);
 	
 	protected boolean shouldRemove;
 	
-	private boolean initialised = false;
-	
 	/**
-	 * <b>A VERY IMPORTANT METHOD!</b> <br>
-	 * 
 	 * Initialises this <code>Entity</code> with an ID number, which is then
 	 * registered with the <code>IDManager</code> under the given <code>Game</code>
 	 * (i.e., the <code>Game</code> which the <code>Entity</code> is a part of).
-	 * <b>ONLY</b> this method can register the <code>Entity</code> correctly -
-	 * failure to call this method will result in the instant removal of this
-	 * <code>Entity</code> from any <code>Game</code> it is added to. Doing all this
-	 * ensures that every <code>Entity</code> in any <code>Game</code>'s
+	 * This ensures that every <code>Entity</code> in any <code>Game</code>'s
 	 * <code>GameWorld</code> is <i>guaranteed</i> to have a different ID number to
-	 * every other Entity that has ever been in that <code>GameWorld</code>.
+	 * every other <code>Entity</code> that has ever been in that
+	 * <code>GameWorld</code>.
 	 * 
 	 * @param entityID - the ID number of this <code>Entity</code> - must be unique
 	 *                 amongst the ID numbers of every other <code>Entity</code> in
@@ -53,22 +51,17 @@ public abstract class Entity extends GameObject {
 	 * @param game     - the <code>Game</code> under which this
 	 *                 <code>Entity</code>'s ID number should be registered with the
 	 *                 <code>IDManager</code>.
+	 *                 
+	 * @param weapons - the <code>Weapon</code>s this <code>Entity</code> is armed with (may be unarmed).
 	 * 
-	 * @throws GameError if:
-	 *                   <li><code>game</code> is <code>null</code></li>
-	 *                   <li>this <code>Entity</code> has already been initialised
-	 *                   by this method.</li>
-	 *                   <li><code>entityID</code> has already been registered (to
-	 *                   another <code>Entity</code>) with the
-	 *                   <code>IDManager</code> under this <code>Game</code>.</li>
+	 * @throws GameError if <code>game</code> is <code>null</code> or the given ID
+	 *                   has already been registered (to another
+	 *                   <code>Entity</code>) with the <code>IDManager</code> under
+	 *                   this <code>Game</code>.
 	 */
-	protected final void init(Integer entityID, Game game) {
+	protected Entity(Integer entityID, Game game, Weapon ... weapons) {
 		if (game == null) {
 			throw new GameError("Can't initialise an Entity with a null Game!");
-		}
-
-		if (initialised) {
-			throw new GameError("Can't initialise the same Entity (" + entityID + ") twice!");
 		}
 
 		if (IDManager.alreadyUsedID(game, entityID)) {
@@ -76,13 +69,25 @@ public abstract class Entity extends GameObject {
 		}
 		
 		this.entityID = entityID;
-		initialised = true;
+		
+		this.weapons = weapons;
+		weaponIndex = weapons.length > 0 ? 0 : -1;
 		
 		shouldRemove = false;
 	}
 	
+	/**
+	 * Gets the unique ID number this <code>Entity</code> is registered with the
+	 * <code>IDManager</code> with.
+	 * 
+	 * @return the Entity's ID number.
+	 */
 	public final int getID() {
-		return initialised ? entityID : -1;
+		return entityID;
+	}
+	
+	public Position getInitialPosition() {
+		return startPos;
 	}
 	
 	/**
@@ -95,9 +100,15 @@ public abstract class Entity extends GameObject {
 	 *         starting location yet.
 	 */
 	public Position getPlannedPosition() {
-		if (currentPos == null) return null;
+		if (startPos == null) return null;
 		
-		return currentPos.move(plannedMove);
+		return startPos.move(plannedMove);
+	}
+	
+	public Weapon getWeapon() {
+		if (weaponIndex == -1) return null;
+		
+		return weapons[weaponIndex];
 	}
 	
 	/**
@@ -120,15 +131,15 @@ public abstract class Entity extends GameObject {
 			return false;
 
 		Direction newDir = Direction.asEnum(newMove);
-		Position newPos = currentPos.move(newMove);
+		Position newPos = startPos.move(newMove);
 
-		Tile currentTile = gW.getTile(currentPos);
+		Tile currentTile = gW.tileAt(startPos);
 
 		if (currentTile.getType() == TileType.STAIRS) {
 			newPos = newPos.move(((StairCase) currentTile).getHeightChange(newMove));
 		}
 
-		Tile newTile = gW.getTile(newPos);
+		Tile newTile = gW.tileAt(newPos);
 
 		if (newDir != Direction.NONE) {
 			if (newTile.isObstruction(newMove))
@@ -198,17 +209,15 @@ public abstract class Entity extends GameObject {
 	 *         <code>false</code>).
 	 */
 	public final boolean onLadder(GameWorld gW) {
-		if (currentPos == null || gW == null || !gW.hasEntity(this))
+		if (startPos == null || gW == null || !gW.hasEntity(this))
 			return false;
 
-		return gW.getTile(currentPos).getType() == TileType.LADDER;
+		return gW.tileAt(startPos).getType() == TileType.LADDER;
 	}
 
 	public abstract boolean isDead();
 	
 	public final boolean shouldRemove() {
-		if (!initialised) return true;
-		
 		return shouldRemove;
 	}
 }

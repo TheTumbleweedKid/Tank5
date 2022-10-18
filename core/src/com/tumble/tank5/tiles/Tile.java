@@ -1,11 +1,14 @@
 package com.tumble.tank5.tiles;
 
 import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.Position;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.events.Event;
 import com.tumble.tank5.world_logic.DirectionVector;
 import com.tumble.tank5.world_logic.GameObject;
 
@@ -21,7 +24,8 @@ public abstract class Tile extends GameObject {
 	private Set<Tile> supports = new HashSet<Tile>();
 	private Set<Tile> supportedBy = new HashSet<Tile>();
 
-	protected TileType type;
+	private TileType type;
+	protected int weight;
 
 	public enum TileType {
 		AIR,
@@ -29,6 +33,13 @@ public abstract class Tile extends GameObject {
 		LADDER,
 		STAIRS,
 		RUBBLE
+	}
+	
+	public Tile(TileType type, Position pos, int health, int weight) {
+		this.type = type;
+		this.weight = weight;
+		
+		spawn(pos, health);
 	}
 	
 	/**
@@ -44,15 +55,19 @@ public abstract class Tile extends GameObject {
 	 *         via the given <code>DirectionVector</code>, or <code>false</code> if can.
 	 */
 	public abstract boolean isObstruction(DirectionVector dir);
+	
+	public abstract boolean stopsBullets();
 
-	public abstract boolean providesSupport();
+	public abstract boolean stopsFalling();
 
-	public boolean damage(int newHealth, Entity attacker, GameWorld gW) {
-		if (damage(getHealth() - newHealth, attacker)) {
+	public boolean damage(int damage, Entity attacker, GameWorld gW, Queue<Event> eventStream) {
+		if (damage(damage, attacker)) {
 			for (Tile t : supports) {
-				t.removeSupport(this, gW);
+				t.removeSupport(this, attacker, gW, eventStream);
 			}
+			return true;
 		}
+		return false;
 	}
 	
 	public void addSupport(Tile t) {
@@ -62,14 +77,14 @@ public abstract class Tile extends GameObject {
 		}
 	}
 	
-	public void removeSupport(Tile t, GameWorld gW) {
+	public void removeSupport(Tile t, Entity attacker, GameWorld gW, Queue<Event> eventStream) {
 		supportedBy.remove(t);
 		
 		if (supportedBy.size() == 0 && type != TileType.RUBBLE) {
-			gW.getRubbleManager().makeRubble(this);
+			gW.getRubbleManager().makeRubble(this, attacker, eventStream);
 			
 			for (Tile supported : supports) {
-				supported.removeSupport(this, gW);
+				supported.removeSupport(this, attacker, gW, eventStream);
 			}
 			
 		}
