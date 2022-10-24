@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.tiles.Air;
 import com.tumble.tank5.tiles.Ladder;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Wall;
+import com.tumble.tank5.util.GameUtils;
 
 /**
  * Stores and provides access to each <code>Entity</code> and <code>Tile</code>
@@ -297,39 +300,126 @@ public class GameWorld {
 		return tiles[(int) (z / Tile.TILE_SIZE)][(int) (y / Tile.TILE_SIZE)][(int) (x / Tile.TILE_SIZE)];
 	}
 	
-	public List<GameObject> getObstructions(Position from, Position to, double time) {
-		List<GameObject> obstructions = new ArrayList<GameObject>();
-		
+	public Queue<GameObject> getObstructions(Position from, Position to, double time) {
 		Tile fromTile = tileAt(from);
 		Tile toTile = tileAt(to);
 		
+		// Don't allow shooting between different z-layers... yet!
 		if (fromTile == null
 				|| toTile == null
 				|| fromTile == toTile
-				|| from.getZ() != to.getZ()) return obstructions;
+				|| from.getZ() != to.getZ()) return new Queue<GameObject>();
 		
-		int xDiff = Math.abs(to.getX() - from.getX());
-		int yDiff = Math.abs(to.getY() - from.getY());
 		
-		if (xDiff > yDiff) {
-			if (yDiff == 0) {
-				double dx = Math.signum(to.getX() - from.getX()) * Tile.TILE_SIZE;
-				
-				for (int i = 0; i < xDiff; i++) {
-					Tile t = tileAt(from.x + i * dx, from.y, from.z);
-					
-					if (t != null && !t.stopsBullets()) {
-						obstructions.add(t);
-					}
-				}
-			}
+		return rayTrace3D(from, to);
+	}
+	
+	/**
+	 * Collects all <code>Tile</code>s between two given <code>Position</code>s that
+	 * stop bullets.
+	 * 
+	 * Credit to skrjablin's comment at:
+	 * https://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
+	 * 
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	private Queue<GameObject> rayTrace3D(Position from, Position to) {
+		Queue<GameObject> hits = new Queue<GameObject>();
+		
+		double dx = Math.abs(to.x - from.x);
+		double dy = Math.abs(to.y - from.y);
+		double dz = Math.abs(to.z - from.z);
+
+		int x = (int) (Math.floor(from.x));
+		int y = (int) (Math.floor(from.y));
+		int z = (int) (Math.floor(from.z));
+
+		double dt_dx = 1.0 / dx;
+		double dt_dy = 1.0 / dy;
+		double dt_dz = 1.0 / dz;
+
+		double t = 0;
+
+		int n = 1;
+		int x_inc, y_inc, z_inc;
+		double t_next_y, t_next_x, t_next_z;
+
+		if (dx == 0) {
+			x_inc = 0;
+			t_next_x = dt_dx; // infinity
+		} else if (to.x > from.x) {
+			x_inc = 1;
+			n += (int) (Math.floor(to.x)) - x;
+			t_next_x = (Math.floor(from.x) + 1 - from.x) * dt_dx;
 		} else {
-			if (xDiff != 0) {
-				
+			x_inc = -1;
+			n += x - (int) (Math.floor(to.x));
+			t_next_x = (from.x - Math.floor(from.x)) * dt_dx;
+		}
+
+		if (dy == 0) {
+			y_inc = 0;
+			t_next_y = dt_dy; // infinity
+		} else if (to.y > from.y) {
+			y_inc = 1;
+			n += (int) (Math.floor(to.y)) - y;
+			t_next_y = (Math.floor(from.y) + 1 - from.y) * dt_dy;
+		} else {
+			y_inc = -1;
+			n += y - (int) (Math.floor(to.y));
+			t_next_y = (from.y - Math.floor(from.y)) * dt_dy;
+		}
+
+		if (dz == 0) {
+			z_inc = 0;
+			t_next_z = dt_dz; // infinity
+		} else if (to.z > from.z) {
+			z_inc = 1;
+			n += (int) (Math.floor(to.z)) - z;
+			t_next_z = (Math.floor(from.z) + 1 - from.z) * dt_dz;
+		} else {
+			z_inc = -1;
+			n += z - (int) (Math.floor(to.z));
+			t_next_z = (from.z - Math.floor(from.z)) * dt_dz;
+		}
+
+		for (; n > 0; --n) {
+			Tile tile = tileAt(x, y, z);
+			Entity entity = entityAt(new Position(x, y, z));
+			
+			if (tile != null
+					&& tile != (hits.isEmpty() ? null : hits.first())
+					&& tile.stopsBullets()) {
+				hits.addLast(tile);
+			}
+			
+			if (entity != null
+					&& entity != (hits.isEmpty() ? null : hits.first())
+					&& GameUtils.collideEntityBullet(entity, from, to)) {
+				hits.addLast(entity);
+			}
+			
+			if (t_next_x <= t_next_y && t_next_x <= t_next_z) {
+				// t_next_x is smallest
+				x += x_inc;
+				t = t_next_x;
+				t_next_x += dt_dx;
+			} else if (t_next_y <= t_next_x && t_next_y <= t_next_z) {
+				// t_next_y is smallest
+				y += y_inc;
+				t = t_next_y;
+				t_next_y += dt_dy;
+			} else {
+				// t_next_y is smallest
+				z += z_inc;
+				t = t_next_z;
+				t_next_z += dt_dz;
 			}
 		}
 		
-		return obstructions;
+		return hits;
 	}
 
 	/**

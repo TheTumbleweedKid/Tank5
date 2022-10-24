@@ -1,6 +1,6 @@
 package com.tumble.tank5.world_logic;
 
-import com.tumble.tank5.events.Input;
+import com.tumble.tank5.inputs.Input;
 import com.tumble.tank5.util.GameError;
 
 /**

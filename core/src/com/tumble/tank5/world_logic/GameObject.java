@@ -44,4 +44,10 @@ public abstract class GameObject {
 	public final Entity getAttacker() {
 		return attacker;
 	}
+	
+	@Override
+	public abstract boolean equals(Object other);
+	
+	@Override
+	public abstract int hashCode();
 }

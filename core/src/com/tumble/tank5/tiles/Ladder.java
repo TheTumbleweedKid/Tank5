@@ -44,5 +44,4 @@ public class Ladder extends Tile {
 	public String toString() {
 		return "#";
 	}
-
 }

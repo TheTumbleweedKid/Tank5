@@ -3,7 +3,10 @@ package com.tumble.tank5.weapons;
 import java.util.List;
 import java.util.Map;
 
+import com.badlogic.gdx.utils.Queue;
+import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.GameError;
+import com.tumble.tank5.util.Pair;
 import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
@@ -62,6 +65,10 @@ public abstract class Weapon {
 	public final boolean ableToFire(int currentRound) {
 		return !isReloading && magBullets > 0 && currentRound - lastFire >= cooldown;
 	}
+
+	public final boolean ableToReload() {
+		return !isReloading && magBullets < magSize && reserveBullets > 0;
+	}
 	
 	/**
 	 * Server-side method. Fires the weapon, returning a map of all the victims to
@@ -82,20 +89,46 @@ public abstract class Weapon {
 	 * 
 	 * @return a map of all the victims to their damages.
 	 */
-	public abstract Map<GameObject, Integer> fire(
+	public abstract List<Damage> fire(
 			int ownerId,
 			GameWorld gW,
 			Position ... positions);
 	
 	
-	protected static void singleBullet(
+	protected static Damage[] singleBullet(
 			int ownerId,
 			double time,
 			GameWorld gW,
 			Position from,
 			Position to,
-			int damage,
-			Map<GameObject, Integer> victims) {
-		List<GameObject> hits = gW.getObstructions(from, to, time);
+			int damage) {
+		// Inefficient, as may collect more Tiles than necessary.
+		Queue<GameObject> hits = gW.getObstructions(from, to, time);
+		
+		int damageRemaining = damage;
+		int numHits = 0;
+		
+		for (GameObject gO : hits) {
+			if (gO.getHealth() <= damageRemaining) {
+				damageRemaining -= gO.getHealth();
+				numHits++;
+			} else {
+				numHits++;
+			}
+			
+			if (damageRemaining == 0) {
+				break;
+			}
+		}
+		
+		Damage[] damages = new Damage[numHits];
+
+		for (int i = 0; i < numHits; i++) {
+			damages[i] = new Damage(
+					hits.get(i),
+					i < numHits - 1 ? hits.get(i).getHealth() : damageRemaining);
+		}
+		
+		return damages;
 	}
 }

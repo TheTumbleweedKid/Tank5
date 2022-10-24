@@ -12,34 +12,31 @@ import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
 /**
- * Fires a fast burst of bullets at a single cell as soon as the firer has
- * stopped moving.
+ * Fires a spray of (simultaneous) bullets at a target cell (and probably to
+ * cells either side of it!) as soon as the firer has stopped moving.
  * 
  * @author Tumbl
  *
  */
-public class AssaultRifle extends Weapon {
+public class Shotgun extends Weapon {
 	private int damage, burstSize;
-	private double betweenShots, spread, baseRange, rangeVariation;
+	private double spread, baseRange, rangeVariation;
 	
-	public AssaultRifle() {
+	public Shotgun() {
 		super(0, 1, 30, 60);
 		
-		// Medium/low damage.
-		damage = 20;
+		// Medium/low per-pellet damage (very high damage overall).
+		damage = 18;
 		
-		// Short burst.
-		burstSize = 5;
+		// Here, 'burstSize' refers to the number of pellets fired.
+		burstSize = 8;
 		
-		// Small interval between shots (fast fire rate).
-		betweenShots = 0.0625;
-		
-		// Decent accuracy.
+		// Wide pellet spread.
 		spread = Math.toRadians(5);
 		
-		// Short/medium range.
-		baseRange = 4.5 * Tile.TILE_SIZE;
-		rangeVariation = 0.5 * Tile.TILE_SIZE;
+		// Short/abysmal range.
+		baseRange = 2.75 * Tile.TILE_SIZE;
+		rangeVariation = 1.0 * Tile.TILE_SIZE;
 	}
 	
 	@Override
@@ -54,9 +51,9 @@ public class AssaultRifle extends Weapon {
 			double range = baseRange + GameUtils.random(rangeVariation);
 			double angle = baseAngle + GameUtils.random(spread);
 			
-			for (Damage damage : Weapon.singleBullet(
+			for (Damage damage :Weapon.singleBullet(
 					ownerId,
-					0.5 + i * betweenShots,
+					0.5,
 					gW,
 					positions[0],
 					new Position(

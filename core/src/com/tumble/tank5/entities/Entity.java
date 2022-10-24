@@ -27,11 +27,24 @@ import com.tumble.tank5.world_logic.Position;
 public abstract class Entity extends GameObject {
 	private int entityID;
 	
+	// Radius of the Entity's cylindrical hit-box.
+	private float radius;
+	
 	private Weapon[] weapons;
 	private int weaponIndex;
 
 	protected Position startPos;
 	protected DirectionVector plannedMove = new DirectionVector(0, 0, 0);
+	
+	public enum Action {
+		FIRE,
+		SWITCH_WEAPON,
+		RELOAD,
+		NONE
+	}
+	
+	protected Action plannedAction;
+	protected Position[] firingPositions;
 	
 	protected boolean shouldRemove;
 	
@@ -51,15 +64,21 @@ public abstract class Entity extends GameObject {
 	 * @param game     - the <code>Game</code> under which this
 	 *                 <code>Entity</code>'s ID number should be registered with the
 	 *                 <code>IDManager</code>.
-	 *                 
-	 * @param weapons - the <code>Weapon</code>s this <code>Entity</code> is armed with (may be unarmed).
+	 * 
+	 * @param radius   - the radius of the <code>Entity</code>'s cylindrical hit-box
+	 *                 - may be greater than {@link Tile#TILE_SIZE}, but this will
+	 *                 not cause the Entity to be hit by bullets outside of the
+	 *                 <code>Tile</code> it is standing on.
+	 * 
+	 * @param weapons  - the <code>Weapon</code>s this <code>Entity</code> is armed
+	 *                 with (may be unarmed).
 	 * 
 	 * @throws GameError if <code>game</code> is <code>null</code> or the given ID
 	 *                   has already been registered (to another
 	 *                   <code>Entity</code>) with the <code>IDManager</code> under
 	 *                   this <code>Game</code>.
 	 */
-	protected Entity(Integer entityID, Game game, Weapon ... weapons) {
+	protected Entity(Integer entityID, Game game, float radius, Weapon ... weapons) {
 		if (game == null) {
 			throw new GameError("Can't initialise an Entity with a null Game!");
 		}
@@ -69,6 +88,8 @@ public abstract class Entity extends GameObject {
 		}
 		
 		this.entityID = entityID;
+		
+		this.radius = radius;
 		
 		this.weapons = weapons;
 		weaponIndex = weapons.length > 0 ? 0 : -1;
@@ -84,6 +105,10 @@ public abstract class Entity extends GameObject {
 	 */
 	public final int getID() {
 		return entityID;
+	}
+	
+	public final float getRadius() {
+		return radius;
 	}
 	
 	public Position getInitialPosition() {
@@ -179,7 +204,13 @@ public abstract class Entity extends GameObject {
 	 * @return <code>true</code> if the weapon-switching was successfully planned,
 	 *         or <code>false</code> if it was invalid in some way.
 	 */
-	public abstract boolean addWeaponSwitch(GameWorld gW);
+	public boolean addWeaponSwitch(GameWorld gW) {
+		if (weaponIndex != -1 && weapons.length != 0) {
+			plannedAction = Action.SWITCH_WEAPON;
+			return true;
+		}
+		return false;
+	}
 
 	/**
 	 * Attempts to make reloading the <code>Entity</code>'s equipped weapon the
@@ -192,7 +223,13 @@ public abstract class Entity extends GameObject {
 	 * @return <code>true</code> if the weapon-reload was successfully planned, or
 	 *         <code>false</code> if it was invalid in some way.
 	 */
-	public abstract boolean addReload(GameWorld gW);
+	public boolean addReload(GameWorld gW) {
+		if (weapons[weaponIndex].ableToReload()) {
+			plannedAction = Action.RELOAD;
+			return true;
+		}
+		return false;
+	}
 	
 	/**
 	 * Find out whether this <code>Entity</code> is currently on a

@@ -1,4 +1,4 @@
-package com.tumble.tank5.events;
+package com.tumble.tank5.inputs;
 
 import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Validate;
 

@@ -5,7 +5,7 @@ import java.util.Set;
 import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.events.Event;
-import com.tumble.tank5.events.Input;
+import com.tumble.tank5.inputs.Input;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.IDManager;
 
@@ -134,7 +134,7 @@ public class Game {
 	
 	@Override
 	public int hashCode() {
-		int prime = 37;
+		int prime = 31;
 		int hash = getClass().hashCode();
 		
 		hash = hash * prime + gameId;

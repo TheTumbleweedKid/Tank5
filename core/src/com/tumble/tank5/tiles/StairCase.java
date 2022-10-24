@@ -33,7 +33,7 @@ public class StairCase extends Tile {
 
 	@Override
 	public boolean isObstruction(DirectionVector dir) {
-		return upDirection.equals(dir) || downDirection.equals(dir);
+		return !(upDirection.equals(dir) || downDirection.equals(dir) || Tile.NO_MOVEMENT.equals(dir));
 	}
 
 	@Override

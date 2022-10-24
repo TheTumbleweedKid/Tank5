@@ -42,4 +42,25 @@ public class Air extends Tile {
 	public String toString() {
 		return " ";
 	}
+
+	@Override
+	public int hashCode() {
+		int prime = 31;
+		int hash = toString().hashCode();
+		
+		// Is obstruction.
+		hash = hash * prime + 0;
+		// Stops bullets.
+		hash = hash * prime + 0;
+		// Stops falling.
+		hash = hash * prime + 0;
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		return true;
+	}
 }

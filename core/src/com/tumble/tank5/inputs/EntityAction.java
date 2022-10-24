@@ -1,4 +1,4 @@
-package com.tumble.tank5.events;
+package com.tumble.tank5.inputs;
 
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.world_logic.GameWorld;
