@@ -1,11 +1,10 @@
 package com.tumble.tank5.weapons;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.GameUtils;
-import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
@@ -41,8 +40,8 @@ public class SubMachineGun extends Weapon {
 	}
 	
 	@Override
-	public Map<GameObject, Integer> fire(int ownerId, GameWorld gW, Position... positions) {
-		Map<GameObject, Integer> victims = new HashMap<GameObject, Integer>();
+	public List<Damage> fire(int ownerId, GameWorld gW, Position... positions) {
+		List<Damage> damages = new ArrayList<Damage>();
 		
 		double baseAngle = Math.atan2(
 				positions[1].y - positions[0].y,
@@ -52,20 +51,21 @@ public class SubMachineGun extends Weapon {
 			double range = baseRange + GameUtils.random(rangeVariation);
 			double angle = baseAngle + GameUtils.random(spread);
 			
-			Weapon.singleBullet(
-					ownerId,
-					0.5 + i * betweenShots,
-					gW,
-					positions[0],
-					new Position(
-							positions[0].x + range * Math.cos(angle),
-							positions[0].y + range * Math.sin(angle),
-							positions[0].z),
-					damage,
-					victims);
+			for (Damage damage :Weapon.singleBullet(
+						ownerId,
+						i * betweenShots,
+						gW,
+						positions[0],
+						new Position(
+								positions[0].x + range * Math.cos(angle),
+								positions[0].y + range * Math.sin(angle),
+								positions[0].z),
+						damage)) {
+				damages.add(damage);
+			}
 		}
 		
-		return victims;
+		return damages;
 	}
 
 }

@@ -46,6 +46,9 @@ public abstract class GameObject {
 	}
 	
 	@Override
+	public abstract String toString();
+	
+	@Override
 	public abstract boolean equals(Object other);
 	
 	@Override

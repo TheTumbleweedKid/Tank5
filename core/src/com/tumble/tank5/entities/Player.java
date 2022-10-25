@@ -6,12 +6,18 @@ import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
 public class Player extends Entity {
+	private static final int STARTING_HEALTH = 100;
 	private String name;
 	
 	public Player(Game game, int id, String name) {
 		super(id, game, (float) (0.25 * Tile.TILE_SIZE));
 		
 		this.name = name != null ? name : "";
+	}
+	
+	@Override
+	public void spawn(Position pos) {
+		spawn(pos, STARTING_HEALTH);
 	}
 
 	@Override
@@ -37,6 +43,11 @@ public class Player extends Entity {
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return name.isEmpty() ? "P" : ("" + name.charAt(0));
+	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -56,5 +67,4 @@ public class Player extends Entity {
 		
 		return hash;
 	}
-	
 }

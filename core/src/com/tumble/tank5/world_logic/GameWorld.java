@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.tiles.Air;
 import com.tumble.tank5.tiles.Ladder;
+import com.tumble.tank5.tiles.StairCase;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Wall;
 import com.tumble.tank5.util.GameUtils;
@@ -109,29 +110,32 @@ public class GameWorld {
 	private void loadWorld(String newWorld) {
 		loaded = false;
 		
-		if (validWorldDimensions(newWorld)) {
+		if (!validWorldDimensions(newWorld)) {
 			throw new IllegalArgumentException("Inconsistent/invalid map dimensions!");
 		}
 
 		int x = 0;
 		int y = 0;
 		int z = 0;
+		
+		tiles = new Tile[newWorld.split("~").length][][];
 
 		for (String level : newWorld.split("~")) {
-			tiles[z] = new Tile[level.split("\n").length][];
-
+			String[] rows = level.split("\n");
+			tiles[z] = new Tile[rows.length][];
+			
 			y = 0;
-			for (String row : level.split("\n")) {
-				tiles[z][y] = new Tile[row.split(" ").length];
+			for (String row : rows) {
+				tiles[z][rows.length - 1 - y] = new Tile[row.length()];
 
 				x = 0;
 				for (char tile : row.toCharArray()) {
-					tiles[z][y][x] = tileFromChar(
-							level.charAt(tile),
+					tiles[z][rows.length - 1 - y][x] = tileFromChar(
+							tile,
 							new Position(
-									x * Tile.TILE_SIZE,
-									y * Tile.TILE_SIZE,
-									z * Tile.TILE_SIZE));
+									(x + 0.5) * Tile.TILE_SIZE,
+									(rows.length - 1 - y + 0.5) * Tile.TILE_SIZE,
+									(z + 0.5) * Tile.TILE_SIZE));
 					x++;
 				}
 
@@ -166,17 +170,16 @@ public class GameWorld {
 				newWorld.split("~")[0].split("\n").length, // Can't be 0
 				newWorld.split("~")[0].split("\n")[0].length() };
 
+		
 		for (String level : newWorld.split("~")) {
-			int y = 0;
-			for (String row : level.split("\n")) {
-				if (row.length() != dimensions[2] || row.length() == 0)
+			String[] rows = level.split("\n");
+			if (rows.length != dimensions[1]) return false;
+
+			for (int y = rows.length - 1; y >= 0; y--) {
+				if (rows[y].length() != dimensions[2] || rows[y].length() == 0)
 					return false;
 
-				y++;
-			}
-
-			if (y != dimensions[1])
-				return false;
+			}			
 		}
 
 		return true;
@@ -204,11 +207,66 @@ public class GameWorld {
 		case 'W':
 			return new Wall(pos);
 		case '#':
+			// North-facing ladder.
 			return new Ladder(pos, 0);
+		case 'v':
+			// North-facing stairs.
+			return new StairCase(pos, new DirectionVector(0, 1, 0));
+		case '<':
+			// East-facing stairs.
+			return new StairCase(pos, new DirectionVector(1, 0, 0));
 		case '^':
+			// South-facing stairs.
+			return new StairCase(pos, new DirectionVector(0, -1, 0));
+		case '>':
+			// West-facing stairs.
+			return new StairCase(pos, new DirectionVector(-1, 0, 0));
 		default:
 			throw new IllegalArgumentException("Unknown tile character '" + c + "' detected!");
 		}
+	}
+	
+	@Override
+	public String toString() {
+		if (!loaded) return "unloaded";
+		
+		String toReturn = "";
+		
+		for (int z = 0; z < tiles.length; z++) {
+			for (int y = tiles[z].length - 1; y >= 0; y--) {
+				for (int x = 0; x < tiles[z][y].length; x++) {
+					Entity entity = entityAt(
+							new Position(
+									x * Tile.TILE_SIZE,
+									y * Tile.TILE_SIZE,
+									z * Tile.TILE_SIZE));
+					if (entity != null) {
+						toReturn += entity;
+					} else {
+						toReturn += tiles[z][y][x];
+					}
+				}
+				
+				if (y != 0) toReturn += "\n";
+			}
+			
+			if (z != tiles.length - 1) toReturn += "~";
+		}
+		
+		return toReturn;
+	}
+	
+	public boolean spawnEntity(Entity e, Position pos, Game g) {
+		if (g.getWorld() != this || outOfBounds(pos) || entityAt(pos) != null) return false;
+		
+		for (Entity existing : entities) {
+			if (existing.getID() == e.getID()) return false;
+		}
+		
+		e.spawn(pos);
+		entities.add(e);
+		
+		return true;
 	}
 	
 	public void setTile(Position position, Tile tile) {
@@ -256,7 +314,7 @@ public class GameWorld {
 			return null;
 
 		for (Entity e : entities) {
-			if (position.sameTile(e.getPlannedPosition()))
+			if (position.sameTile(e.getPosition()))
 				return e;
 		}
 
@@ -456,6 +514,11 @@ public class GameWorld {
 		if (!loaded)
 			return false;
 
-		return x < 0 || x >= worldDimensions[0] || y < 0 || y >= worldDimensions[1] || z < 0 || z >= worldDimensions[2];
+		return x < 0
+				|| x >= worldDimensions[2] * Tile.TILE_SIZE
+				|| y < 0
+				|| y >= worldDimensions[1] * Tile.TILE_SIZE
+				|| z < 0
+				|| z >= worldDimensions[0] * Tile.TILE_SIZE;
 	}
 }

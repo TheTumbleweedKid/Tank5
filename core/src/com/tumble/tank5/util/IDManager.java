@@ -145,11 +145,11 @@ public class IDManager {
 	 * @throws GameError if the given <code>Game</code> is
 	 * <code>null</code> or unregistered.
 	 */
-	public static boolean alreadyUsedID(Game game, Integer id) {
+	public static boolean alreadyUsedID(Game game, int id) {
 		if (game == null || !games.containsKey(game)) {
 			throw new GameError("Null/unregistered Game (" + game + ") given to IDManager.alreadyUsedID()!");
 		}
 
-		return games.get(game) >= id;
+		return id < games.get(game) - 1;
 	}
 }

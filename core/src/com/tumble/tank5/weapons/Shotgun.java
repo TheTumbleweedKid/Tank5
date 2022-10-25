@@ -1,13 +1,10 @@
 package com.tumble.tank5.weapons;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.GameUtils;
-import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 

@@ -1,13 +1,10 @@
 package com.tumble.tank5.weapons;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.GameUtils;
-import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
@@ -55,15 +52,15 @@ public class AssaultRifle extends Weapon {
 			double angle = baseAngle + GameUtils.random(spread);
 			
 			for (Damage damage : Weapon.singleBullet(
-					ownerId,
-					0.5 + i * betweenShots,
-					gW,
-					positions[0],
-					new Position(
-							positions[0].x + range * Math.cos(angle),
-							positions[0].y + range * Math.sin(angle),
-							positions[0].z),
-					damage)) {
+						ownerId,
+						0.5 + i * betweenShots,
+						gW,
+						positions[0],
+						new Position(
+								positions[0].x + range * Math.cos(angle),
+								positions[0].y + range * Math.sin(angle),
+								positions[0].z),
+						damage)) {
 				damages.add(damage);
 			}
 		}

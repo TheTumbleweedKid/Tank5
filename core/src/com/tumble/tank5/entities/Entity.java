@@ -25,7 +25,7 @@ import com.tumble.tank5.world_logic.Position;
  *
  */
 public abstract class Entity extends GameObject {
-	private int entityID;
+	private final int entityID;
 	
 	// Radius of the Entity's cylindrical hit-box.
 	private float radius;
@@ -78,7 +78,7 @@ public abstract class Entity extends GameObject {
 	 *                   <code>Entity</code>) with the <code>IDManager</code> under
 	 *                   this <code>Game</code>.
 	 */
-	protected Entity(Integer entityID, Game game, float radius, Weapon ... weapons) {
+	protected Entity(int entityID, Game game, float radius, Weapon ... weapons) {
 		if (game == null) {
 			throw new GameError("Can't initialise an Entity with a null Game!");
 		}
@@ -97,44 +97,7 @@ public abstract class Entity extends GameObject {
 		shouldRemove = false;
 	}
 	
-	/**
-	 * Gets the unique ID number this <code>Entity</code> is registered with the
-	 * <code>IDManager</code> with.
-	 * 
-	 * @return the Entity's ID number.
-	 */
-	public final int getID() {
-		return entityID;
-	}
-	
-	public final float getRadius() {
-		return radius;
-	}
-	
-	public Position getInitialPosition() {
-		return startPos;
-	}
-	
-	/**
-	 * Finds the <code>Position</code> that this <code>Entity</code> is currently
-	 * planning to move to on the next turn.
-	 * 
-	 * @return the <code>Position</code> that will move to (cannot be outside of the
-	 *         <code>GameWorld</code> this <code>Entity</code> is part of). May be
-	 *         <code>null</code> if the <code>Entity</code> has not been given a
-	 *         starting location yet.
-	 */
-	public Position getPlannedPosition() {
-		if (startPos == null) return null;
-		
-		return startPos.move(plannedMove);
-	}
-	
-	public Weapon getWeapon() {
-		if (weaponIndex == -1) return null;
-		
-		return weapons[weaponIndex];
-	}
+	public abstract void spawn(Position pos);
 	
 	/**
 	 * Attempts to add a new movement on top of whatever movement is already planned
@@ -256,5 +219,44 @@ public abstract class Entity extends GameObject {
 	
 	public final boolean shouldRemove() {
 		return shouldRemove;
+	}
+	
+	/**
+	 * Gets the unique ID number this <code>Entity</code> is registered with the
+	 * <code>IDManager</code> with.
+	 * 
+	 * @return the Entity's ID number.
+	 */
+	public final int getID() {
+		return entityID;
+	}
+	
+	public final float getRadius() {
+		return radius;
+	}
+	
+	public Position getInitialPosition() {
+		return startPos;
+	}
+	
+	/**
+	 * Finds the <code>Position</code> that this <code>Entity</code> is currently
+	 * planning to move to on the next turn.
+	 * 
+	 * @return the <code>Position</code> that will move to (cannot be outside of the
+	 *         <code>GameWorld</code> this <code>Entity</code> is part of). May be
+	 *         <code>null</code> if the <code>Entity</code> has not been given a
+	 *         starting location yet.
+	 */
+	public Position getPlannedPosition() {
+		if (startPos == null) return null;
+		
+		return startPos.move(plannedMove);
+	}
+	
+	public Weapon getWeapon() {
+		if (weaponIndex == -1) return null;
+		
+		return weapons[weaponIndex];
 	}
 }

@@ -62,6 +62,8 @@ public class Game {
 		this.minPlayers = minPlayers;
 		
 		gameId = IDManager.registerGame(this);
+		
+		world = new GameWorld();
 	}
 	
 	/**
@@ -121,6 +123,16 @@ public class Game {
 				// Note: events has already been emptied!
 			}
 		}
+	}
+
+	/**
+	 * Gets the <code>GameWorld</code> owned by this <code>Game</code>.
+	 * 
+	 * @return the <code>Game</code>'s <code>GameWorld</code>.
+	 */
+	public GameWorld getWorld() {
+		// Is there a better way of doing this?
+		return world;
 	}
 	
 	@Override
