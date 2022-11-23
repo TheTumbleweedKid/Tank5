@@ -20,21 +20,25 @@ public class Game {
 	 * <code>false</code> if it is client-side.
 	 */
 	public final boolean isServer;
-	
-	private final int gameId;
-	
+
+	private int gameID;
+	// Used to make sure this Game is not considered equal to a Game that has
+	// already been registered under a gameID of 0 with the IDManager before it has
+	// been registered.
+	private boolean isRegistered = false;
+
 	private int minPlayers;
-	
+
 	private Set<Entity> entities;
 	private GameWorld world;
-	
+
 	private long startTime;
 	private boolean started = false;
 
 	private Round round;
-	
+
 	private Queue<Event> events;
-	
+
 	/**
 	 * Constructs a new <code>Game</code> (without loading a <code>GameWorld</code>
 	 * or any of the <code>Player</code>s), and registers it with the
@@ -53,31 +57,55 @@ public class Game {
 	 */
 	public Game(boolean isServer, int minPlayers) {
 		this.isServer = isServer;
-		
+
 		if (minPlayers <= 0) {
-			throw new GameError("A Game must require at least one Player to start ("
-					+ minPlayers + " is invalid)!");
+			throw new GameError("A Game must require at least one Player to start (" + minPlayers + " is invalid)!");
 		}
-		
+
 		this.minPlayers = minPlayers;
-		
-		gameId = IDManager.registerGame(this);
-		
+
+		IDManager.registerGame(this);
+
 		world = new GameWorld();
 	}
 	
+	/**
+	 * Sets the <code>Game</code>'s <code>gameID</code> to a unique number assigned
+	 * by the <code>IDManager</code>. Should only be called once, during the
+	 * construction of this <code>Game</code> object, by
+	 * {@link IDManager#registerGame(Game)}.
+	 * 
+	 * @param id - the unique <code>int</code> to use as this <code>Game</code>'s
+	 *           identifying number.
+	 * 
+	 * @throws GameError if this method is called more than once on this
+	 *                   <code>Game</code>.
+	 */
+	public void setGameID(int id) {
+		if (isRegistered) {
+			throw new GameError("Cannot re-set a Game's ID number once set!");
+		}
+		
+		gameID = id;
+		isRegistered = true;
+	}
+
 	/**
 	 * Attempts to start the <code>Game</code>, using the parameters to define the
 	 * sine wave of <code>Round</code> durations by constructing the first
 	 * <code>Round</code> with them.
 	 * 
-	 * @param baseRoundDuration - the mean duration of each <code>Round</code> in a full cycle.
+	 * @param baseRoundDuration - the mean duration of each <code>Round</code> in a
+	 *                          full cycle.
 	 * 
 	 * @param amplitude
 	 * 
-	 * @param startingPhase - the phase shift of the first <code>Round</code> in the series.
+	 * @param startingPhase     - the phase shift of the first <code>Round</code> in
+	 *                          the series.
 	 * 
-	 * @param period - the number of <code>Round</code>s in a cycle (i.e., how many should pass before the same duration re-occurs).
+	 * @param period            - the number of <code>Round</code>s in a cycle
+	 *                          (i.e., how many should pass before the same duration
+	 *                          re-occurs).
 	 * 
 	 * @see Round#Round(int, int, int, int) for full parameter T's & C's.
 	 * 
@@ -87,7 +115,7 @@ public class Game {
 		try {
 			round = new Round(baseRoundDuration, amplitude, startingPhase, period);
 			round.start();
-			
+
 			startTime = System.currentTimeMillis();
 			started = true;
 			return true;
@@ -96,27 +124,29 @@ public class Game {
 			return false;
 		}
 	}
-	
+
 	public boolean isStarted() {
 		return started;
 	}
-	
+
 	public boolean addInput(Input i) {
-		if (i == null) return false;
-		
+		if (i == null)
+			return false;
+
 		if (!started) {
 			// accept special inputs (add player, player-quit, NPC-spawn, etc.).
 			return false;
 		}
-		
+
 		return round.shouldAccept(i) && i.apply(world);
 	}
-	
+
 	public void update() {
 		if (round.isFinished()) {
 			if (!events.isEmpty()) {
 				events.first().apply(world, events);
-				if (events.first().isFinished()) events.removeFirst();
+				if (events.first().isFinished())
+					events.removeFirst();
 			} else {
 				round = round.next();
 				round.start();
@@ -134,23 +164,23 @@ public class Game {
 		// Is there a better way of doing this?
 		return world;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null || obj.getClass() != getClass()) return false;
-		
+		if (obj == null || obj.getClass() != getClass())
+			return false;
+
 		Game other = (Game) obj;
-		
-		return gameId == other.gameId;
+
+		return gameID == other.gameID;// && isRegistered == other.isRegistered;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		int prime = 31;
 		int hash = getClass().hashCode();
-		
-		hash = hash * prime + gameId;
-		
+
+		hash = hash * prime + gameID;
 		return hash;
 	}
 }

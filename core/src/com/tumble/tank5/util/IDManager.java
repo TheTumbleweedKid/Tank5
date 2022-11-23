@@ -3,6 +3,7 @@ package com.tumble.tank5.util;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import com.tumble.tank5.world_logic.Game;
@@ -58,13 +59,14 @@ public class IDManager {
 	 * <code>null</code> or has already been registered with the
 	 * <code>IDManager</code>.
 	 */
-	public static int registerGame(Game game) {
+	public static void registerGame(Game game) {
 		if (game == null || alreadyRegistered.contains(game)) {
 			throw new GameError("Cannot register a null or already-registered Game (" + game + ")!");
 		}
-		games.put(game, 0);
+		
+		game.setGameID(++nextGameId);
 		alreadyRegistered.add(game);
-		return nextGameId++;
+		games.put(game, 0);
 	}
 
 	/**
@@ -150,6 +152,6 @@ public class IDManager {
 			throw new GameError("Null/unregistered Game (" + game + ") given to IDManager.alreadyUsedID()!");
 		}
 
-		return id < games.get(game) - 1;
+		return id + (game.isServer ? 1 : 0) < games.get(game);
 	}
 }

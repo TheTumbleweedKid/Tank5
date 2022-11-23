@@ -157,7 +157,7 @@ public abstract class Tile extends GameObject {
 		
 		Tile other = (Tile) obj;
 		
-		return other.type != type
+		return other.type == type
 				&& other.toString().equals(toString())
 				&& other.supports.containsAll(supports)
 				&& other.supports.size() == supports.size()

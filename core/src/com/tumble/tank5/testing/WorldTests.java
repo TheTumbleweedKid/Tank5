@@ -76,6 +76,7 @@ public class WorldTests {
 				"    \n" +
 				"  W \n" +
 				"# W ";
+		
 		GameWorld gW = new GameWorld();
 		
 		gW.loadFromString(mapString);
@@ -96,6 +97,7 @@ public class WorldTests {
 				"    \n" +
 				"    \n" +
 				"    ";
+		
 		GameWorld gW = new GameWorld();
 		
 		gW.loadFromString(mapString);
@@ -149,6 +151,7 @@ public class WorldTests {
 				"     \n" +
 				"     \n" +
 				"  #  ";
+		
 		GameWorld gW = new GameWorld();
 		
 		gW.loadFromString(mapString);
@@ -189,6 +192,7 @@ public class WorldTests {
 				"    \n" +
 				"   W\n" +
 				"  W ";
+		
 		Position[] spawnLocations = {
 				new Position(
 						2 * Tile.TILE_SIZE,
@@ -197,7 +201,8 @@ public class WorldTests {
 				new Position(
 						1 * Tile.TILE_SIZE,
 						1 * Tile.TILE_SIZE,
-						0 * Tile.TILE_SIZE)};
+						0 * Tile.TILE_SIZE)
+		};
 		
 		Game g = new Game(true, 1);
 		GameWorld gW = g.getWorld();

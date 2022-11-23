@@ -47,9 +47,10 @@ public abstract class Entity extends GameObject {
 	protected Position[] firingPositions;
 	
 	protected boolean shouldRemove;
-	
+
 	/**
-	 * Initialises this <code>Entity</code> with an ID number, which is then
+	 * Initialises this <code>Entity</code> with an ID number (not necessarily
+	 * determined by the <code>entityID</code> parameter here), which is then
 	 * registered with the <code>IDManager</code> under the given <code>Game</code>
 	 * (i.e., the <code>Game</code> which the <code>Entity</code> is a part of).
 	 * This ensures that every <code>Entity</code> in any <code>Game</code>'s
@@ -59,7 +60,8 @@ public abstract class Entity extends GameObject {
 	 * 
 	 * @param entityID - the ID number of this <code>Entity</code> - must be unique
 	 *                 amongst the ID numbers of every other <code>Entity</code> in
-	 *                 the given <code>Game</code>.
+	 *                 the given <code>Game</code>. <b>ONLY</b> used if
+	 *                 <code>game</code> is a client-side <code>Game</code>.
 	 * 
 	 * @param game     - the <code>Game</code> under which this
 	 *                 <code>Entity</code>'s ID number should be registered with the
@@ -83,11 +85,11 @@ public abstract class Entity extends GameObject {
 			throw new GameError("Can't initialise an Entity with a null Game!");
 		}
 
-		if (IDManager.alreadyUsedID(game, entityID)) {
+		if (!game.isServer && IDManager.alreadyUsedID(game, entityID)) {
 			throw new GameError("Can't re-use an Entity's ID number (" + entityID + ")!");
 		}
 		
-		this.entityID = entityID;
+		this.entityID = game.isServer ? IDManager.nextID(game) : entityID;
 		
 		this.radius = radius;
 		

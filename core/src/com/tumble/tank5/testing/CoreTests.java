@@ -12,5 +12,4 @@ public class CoreTests {
 		
 		assert !g.start(0, 0, 0, 0);
 	}
-
 }

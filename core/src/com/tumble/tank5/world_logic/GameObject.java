@@ -14,9 +14,9 @@ public abstract class GameObject {
 	 * 
 	 * @param position - the <code>Position</code> to spawn at. May be
 	 *                 <code>null</code> in the case of the singleton
-	 *                 {@link Air#Air} <code>Tile</code>.
+	 *                 {@link Air#AIR} <code>Tile</code>.
 	 * 
-	 * @param health   - the health to start with. May be
+	 * @param health   - the health to start with. May be 0 in the case of {@link Air#AIR}.
 	 */
 	protected final void spawn(Position position, int health) {
 		this.position = position;

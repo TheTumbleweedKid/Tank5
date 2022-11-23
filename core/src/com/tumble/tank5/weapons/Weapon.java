@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.badlogic.gdx.utils.Queue;
+import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.Pair;
@@ -95,29 +96,33 @@ public abstract class Weapon {
 			Position ... positions);
 	
 	
-	protected static Damage[] singleBullet(
+	public static Damage[] singleBullet(
 			int ownerId,
 			double time,
 			GameWorld gW,
 			Position from,
 			Position to,
 			int damage) {
+		Entity owner = gW.getEntity(ownerId);
+		Tile standingOn = gW.tileAt(owner.getPosition());
 		// Inefficient, as may collect more Tiles than necessary.
-		Queue<GameObject> hits = gW.getObstructions(from, to, time);
+		GameObject[] hits = gW.getObstructions(from, to, time);
 		
 		int damageRemaining = damage;
 		int numHits = 0;
 		
 		for (GameObject gO : hits) {
-			if (gO.getHealth() <= damageRemaining) {
-				damageRemaining -= gO.getHealth();
-				numHits++;
-			} else {
-				numHits++;
-			}
-			
-			if (damageRemaining == 0) {
-				break;
+			if (!owner.equals(gO) && !standingOn.equals(gO)) {
+				if (gO.getHealth() <= damageRemaining) {
+					damageRemaining -= gO.getHealth();
+					numHits++;
+				} else {
+					numHits++;
+				}
+				
+				if (damageRemaining == 0) {
+					break;
+				}
 			}
 		}
 		
@@ -125,8 +130,8 @@ public abstract class Weapon {
 
 		for (int i = 0; i < numHits; i++) {
 			damages[i] = new Damage(
-					hits.get(i),
-					i < numHits - 1 ? hits.get(i).getHealth() : damageRemaining);
+					hits[i],
+					i < numHits - 1 ? hits[i].getHealth() : damageRemaining);
 		}
 		
 		return damages;

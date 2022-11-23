@@ -46,7 +46,7 @@ public class Position {
 	 *         <code>Tile</code>-sized units).
 	 */
 	public int getX() {
-		return (int) (x / Tile.TILE_SIZE);
+		return (int) Math.floor(x / Tile.TILE_SIZE);
 	}
 	
 	/**
@@ -59,7 +59,7 @@ public class Position {
 	 *         <code>Tile</code>-sized units).
 	 */
 	public int getY() {
-		return (int) (y / Tile.TILE_SIZE);
+		return (int) Math.floor(y / Tile.TILE_SIZE);
 	}
 	
 	/**
@@ -72,7 +72,7 @@ public class Position {
 	 *         <code>Tile</code>-sized units).
 	 */
 	public int getZ() {
-		return (int) (y / Tile.TILE_SIZE);
+		return (int) Math.floor(z / Tile.TILE_SIZE);
 	}
 	
 	/**
@@ -90,6 +90,11 @@ public class Position {
 	}
 	
 	public boolean sameTile(Position other) {
-		return getX() == other.getX() && getY() == other.getY() && getZ() == other.getZ();
+		return other != null && getX() == other.getX() && getY() == other.getY() && getZ() == other.getZ();
+	}
+	
+	@Override
+	public String toString() {
+		return "(" + getX() + ", " + getY() + ", " + getZ() + ")";
 	}
 }

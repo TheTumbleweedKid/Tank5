@@ -15,6 +15,7 @@ import com.tumble.tank5.tiles.Ladder;
 import com.tumble.tank5.tiles.StairCase;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Wall;
+import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.GameUtils;
 
 /**
@@ -355,44 +356,79 @@ public class GameWorld {
 		if (!loaded || outOfBounds(x, y, z))
 			return null;
 
-		return tiles[(int) (z / Tile.TILE_SIZE)][(int) (y / Tile.TILE_SIZE)][(int) (x / Tile.TILE_SIZE)];
+		return tiles[(int) Math.floor(z / Tile.TILE_SIZE)][(int) Math.floor(y / Tile.TILE_SIZE)][(int) Math.floor(x / Tile.TILE_SIZE)];
 	}
 	
-	public Queue<GameObject> getObstructions(Position from, Position to, double time) {
-		Tile fromTile = tileAt(from);
-		Tile toTile = tileAt(to);
+	public GameObject[] getObstructions(Position from, Position to, double time) {
+		/*
+		 * Tile fromTile = tileAt(from); Tile toTile = tileAt(to);
+		 * 
+		 * // Don't allow shooting between different z-layers... yet! if (fromTile ==
+		 * null || toTile == null || fromTile == toTile || from.getZ() != to.getZ())
+		 * return new Queue<GameObject>();
+		 */
+		if (outOfBounds(from) || to == null)
+			throw new GameError("Invalid start/end Positions for line obstruction!");
 		
-		// Don't allow shooting between different z-layers... yet!
-		if (fromTile == null
-				|| toTile == null
-				|| fromTile == toTile
-				|| from.getZ() != to.getZ()) return new Queue<GameObject>();
+		Queue<GameObject> queue = rayTrace3D(from, to);
 		
+		Entity e = entityAt(from);
+		Tile t = tileAt(from);
+
+		// Check that the first object in the queue is not at the 'from' Position.
+		if (queue.notEmpty() && (queue.first().equals(e) || queue.first().equals(t))) {
+			queue.removeFirst();
+		}
+		// Check that the second (now first) object in the queue is not at the 'from'
+		// Position.
+		if (queue.notEmpty() && (queue.first().equals(e) || queue.first().equals(t))) {
+			queue.removeFirst();
+		}
 		
-		return rayTrace3D(from, to);
+		GameObject[] obstructions = new GameObject[queue.size];
+		
+		int i = 0;
+		while (queue.notEmpty()) {
+			obstructions[i] = queue.removeFirst();
+			i++;
+		}
+		
+		return obstructions;
 	}
 	
 	/**
-	 * Collects all <code>Tile</code>s between two given <code>Position</code>s that
-	 * stop bullets.
-	 * 
+	 * Collects every <code>Tile</code> (that stop bullets) and <code>Entity</code>
+	 * between a given start (the <code>Tile</code>/<code>Entity</code> at which is
+	 * <i>excluded</i>) and end (the <code>Tile</code>/<code>Entity</code> at which
+	 * is <i>included</i>) <code>Position</code>.
+	 * <br>
 	 * Credit to skrjablin's comment at:
 	 * https://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
 	 * 
 	 * @param from
+	 * 
 	 * @param to
+	 * 
 	 * @return
 	 */
 	private Queue<GameObject> rayTrace3D(Position from, Position to) {
 		Queue<GameObject> hits = new Queue<GameObject>();
 		
-		double dx = Math.abs(to.x - from.x);
-		double dy = Math.abs(to.y - from.y);
-		double dz = Math.abs(to.z - from.z);
+		double from_x = from.x / Tile.TILE_SIZE;
+		double from_y = from.y / Tile.TILE_SIZE;
+		double from_z = from.z / Tile.TILE_SIZE;
+		
+		double to_x = to.x / Tile.TILE_SIZE;
+		double to_y = to.y / Tile.TILE_SIZE;
+		double to_z = to.z / Tile.TILE_SIZE;
+		
+		double dx = Math.abs(to.x - from.x) / Tile.TILE_SIZE;
+		double dy = Math.abs(to.y - from.y) / Tile.TILE_SIZE;
+		double dz = Math.abs(to.z - from.z) / Tile.TILE_SIZE;
 
-		int x = (int) (Math.floor(from.x));
-		int y = (int) (Math.floor(from.y));
-		int z = (int) (Math.floor(from.z));
+		int x = (int) (Math.floor(from_x));
+		int y = (int) (Math.floor(from_y));
+		int z = (int) (Math.floor(from_z));
 
 		double dt_dx = 1.0 / dx;
 		double dt_dy = 1.0 / dy;
@@ -407,56 +443,62 @@ public class GameWorld {
 		if (dx == 0) {
 			x_inc = 0;
 			t_next_x = dt_dx; // infinity
-		} else if (to.x > from.x) {
+		} else if (to_x > from_x) {
 			x_inc = 1;
-			n += (int) (Math.floor(to.x)) - x;
-			t_next_x = (Math.floor(from.x) + 1 - from.x) * dt_dx;
+			n += (int) (Math.floor(to_x)) - x;
+			t_next_x = (Math.floor(from_x) + 1 - from_x) * dt_dx;
 		} else {
 			x_inc = -1;
-			n += x - (int) (Math.floor(to.x));
-			t_next_x = (from.x - Math.floor(from.x)) * dt_dx;
+			n += x - (int) (Math.floor(to_x));
+			t_next_x = (from_x - Math.floor(from_x)) * dt_dx;
 		}
 
 		if (dy == 0) {
 			y_inc = 0;
 			t_next_y = dt_dy; // infinity
-		} else if (to.y > from.y) {
+		} else if (to_y > from_y) {
 			y_inc = 1;
-			n += (int) (Math.floor(to.y)) - y;
-			t_next_y = (Math.floor(from.y) + 1 - from.y) * dt_dy;
+			n += (int) (Math.floor(to_y)) - y;
+			t_next_y = (Math.floor(from_y) + 1 - from_y) * dt_dy;
 		} else {
 			y_inc = -1;
-			n += y - (int) (Math.floor(to.y));
-			t_next_y = (from.y - Math.floor(from.y)) * dt_dy;
+			n += y - (int) (Math.floor(to_y));
+			t_next_y = (from_y - Math.floor(from_y)) * dt_dy;
 		}
 
 		if (dz == 0) {
 			z_inc = 0;
 			t_next_z = dt_dz; // infinity
-		} else if (to.z > from.z) {
+		} else if (to_z > from_z) {
 			z_inc = 1;
-			n += (int) (Math.floor(to.z)) - z;
-			t_next_z = (Math.floor(from.z) + 1 - from.z) * dt_dz;
+			n += (int) (Math.floor(to_z)) - z;
+			t_next_z = (Math.floor(from_z) + 1 - from_z) * dt_dz;
 		} else {
 			z_inc = -1;
-			n += z - (int) (Math.floor(to.z));
-			t_next_z = (from.z - Math.floor(from.z)) * dt_dz;
+			n += z - (int) (Math.floor(to_z));
+			t_next_z = (from_z - Math.floor(from_z)) * dt_dz;
 		}
 
 		for (; n > 0; --n) {
-			Tile tile = tileAt(x, y, z);
-			Entity entity = entityAt(new Position(x, y, z));
-			
-			if (tile != null
-					&& tile != (hits.isEmpty() ? null : hits.first())
-					&& tile.stopsBullets()) {
-				hits.addLast(tile);
-			}
-			
-			if (entity != null
-					&& entity != (hits.isEmpty() ? null : hits.first())
-					&& GameUtils.collideEntityBullet(entity, from, to)) {
-				hits.addLast(entity);
+			Position pos = new Position(
+					x * Tile.TILE_SIZE,
+					y * Tile.TILE_SIZE,
+					z * Tile.TILE_SIZE);
+			if (!pos.sameTile(from)) {
+				Tile tile = tileAt(pos);
+				Entity entity = entityAt(pos);
+				
+				if (tile != null
+						&& !tile.equals(hits.isEmpty() ? null : hits.first())
+						&& tile.stopsBullets()) {
+					hits.addLast(tile);
+				}
+				
+				if (entity != null
+						&& !entity.equals(hits.isEmpty() ? null : hits.first())
+						&& GameUtils.collideEntityBullet(entity, from, to)) {
+					hits.addLast(entity);
+				}
 			}
 			
 			if (t_next_x <= t_next_y && t_next_x <= t_next_z) {
