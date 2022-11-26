@@ -113,14 +113,10 @@ public abstract class Weapon {
 		
 		for (GameObject gO : hits) {
 			if (!owner.equals(gO) && !standingOn.equals(gO)) {
-				if (gO.getHealth() <= damageRemaining) {
+				numHits++;
+				if (gO.getHealth() < damageRemaining) {
 					damageRemaining -= gO.getHealth();
-					numHits++;
 				} else {
-					numHits++;
-				}
-				
-				if (damageRemaining == 0) {
 					break;
 				}
 			}

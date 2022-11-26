@@ -61,6 +61,27 @@ public class Damage {
 	}
 	
 	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || obj.getClass() != getClass()) return false;
+		
+		Damage other = (Damage) obj;
+		
+		return victim.equals(other.victim) && damage == other.damage;
+	}
+	
+	@Override
+	public int hashCode() {
+		int prime = 23;
+		int hash = getClass().hashCode();
+		
+		hash = hash * prime + victim.hashCode();
+		
+		hash = hash * prime + damage;
+		
+		return hash;
+	}
+	
+	@Override
 	public String toString() {
 		return "<" +
 				victim +

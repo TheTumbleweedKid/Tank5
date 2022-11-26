@@ -163,19 +163,23 @@ public abstract class Tile extends GameObject {
 				&& other.supports.size() == supports.size()
 				&& other.supportedBy.containsAll(supportedBy)
 				&& other.supportedBy.size() == supportedBy.size()
+				&& (getPosition() == null || getPosition().sameTile(other.getPosition()))
 				&& other.getHealth() == getHealth();
 	}
 	
 	@Override
 	public int hashCode() {
 		int prime = 31;
-		int hash = type.hashCode();
-		
+		int hash = getClass().hashCode();
+
+		hash = hash * prime + type.hashCode();
 		hash = hash * prime + toString().hashCode();
 		
 		// Possibly expensive calls? See HashSet.hashCode().
 		hash = hash * prime + supports.hashCode();
 		hash = hash * prime + supportedBy.hashCode();
+		
+		hash = hash * prime + (getPosition() == null ? 0 : getPosition().hashCode());
 		
 		hash = hash * prime + getHealth();
 		

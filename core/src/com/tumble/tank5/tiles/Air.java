@@ -61,6 +61,6 @@ public class Air extends Tile {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		return true;
+		return false;
 	}
 }

@@ -43,7 +43,7 @@ public class WeaponTests {
 				"  W    \n" +
 				"       \n" +
 				"     WW\n" +
-				"  W W  ");
+				"  W WW ");
 		
 		Weapon weapon = new DevWeapon(
 				0,
@@ -75,25 +75,17 @@ public class WeaponTests {
 				0.5 * Tile.TILE_SIZE);
 		// A position directly east of the shooter.
 		Position shootAt2 = new Position(
-				2.5 * Tile.TILE_SIZE,
-				4.5 * Tile.TILE_SIZE,
+				6.5 * Tile.TILE_SIZE,
+				1.5 * Tile.TILE_SIZE,
 				0.5 * Tile.TILE_SIZE);
 		// A position in a non-cardinal direction from the shooter.
 		Position shootAt3 = new Position(
-				4.5 * Tile.TILE_SIZE,
+				5.5 * Tile.TILE_SIZE,
 				0.5 * Tile.TILE_SIZE,
 				0.5 * Tile.TILE_SIZE);
 
 		// OBSTRUCTION-DETECTION:
 		
-		System.out.println(gW.tileAt(new Position(
-				2.5 * Tile.TILE_SIZE,
-				3.5 * Tile.TILE_SIZE,
-				0.5 * Tile.TILE_SIZE)));
-		System.out.println(gW.tileAt(new Position(
-				2.5 * Tile.TILE_SIZE,
-				4.5 * Tile.TILE_SIZE,
-				0.5 * Tile.TILE_SIZE)));
 		// Check the right GameObjects are hit (identified as obstructions) for a bullet
 		// fired in a vertical line.
 		assert correctValues(
@@ -113,11 +105,11 @@ public class WeaponTests {
 				"b",
 				gW.getObstructions(playerPos, shootAt2, 0),
 				gW.tileAt(new Position(
-						4.5 * Tile.TILE_SIZE,
+						5.5 * Tile.TILE_SIZE,
 						1.5 * Tile.TILE_SIZE,
 						0.5 * Tile.TILE_SIZE)),
 				gW.tileAt(new Position(
-						5.5 * Tile.TILE_SIZE,
+						6.5 * Tile.TILE_SIZE,
 						1.5 * Tile.TILE_SIZE,
 						0.5 * Tile.TILE_SIZE)));
 		// Check the right GameObjects are hit (identified as obstructions) for a bullet
@@ -126,12 +118,12 @@ public class WeaponTests {
 				"c",
 				gW.getObstructions(playerPos, shootAt3, 0),
 				gW.tileAt(new Position(
-						2.5 * Tile.TILE_SIZE,
-						3.5 * Tile.TILE_SIZE,
+						4.5 * Tile.TILE_SIZE,
+						0.5 * Tile.TILE_SIZE,
 						0.5 * Tile.TILE_SIZE)),
 				gW.tileAt(new Position(
-						2.5 * Tile.TILE_SIZE,
-						4.5 * Tile.TILE_SIZE,
+						5.5 * Tile.TILE_SIZE,
+						0.5 * Tile.TILE_SIZE,
 						0.5 * Tile.TILE_SIZE)));
 		
 		// DAMAGE-REGISTRY:
@@ -153,7 +145,7 @@ public class WeaponTests {
 								2.5 * Tile.TILE_SIZE,
 								3.5 * Tile.TILE_SIZE,
 								0.5 * Tile.TILE_SIZE)),
-						0));
+						22));
 		// EDGE CASE: Check that a bullet with exactly enough damage to kill the first
 		// target does not continue on to do 0 damage to a second one.
 		assert correctValues(
@@ -170,7 +162,7 @@ public class WeaponTests {
 								2.5 * Tile.TILE_SIZE,
 								3.5 * Tile.TILE_SIZE,
 								0.5 * Tile.TILE_SIZE)),
-						0));
+						45));
 		// Check that both targets are hit by a penetrating bullet (one that has more
 		// than enough damage to kill the first target, as well as damaging the second).
 		assert correctValues(
@@ -187,13 +179,13 @@ public class WeaponTests {
 								2.5 * Tile.TILE_SIZE,
 								3.5 * Tile.TILE_SIZE,
 								0.5 * Tile.TILE_SIZE)),
-						0),
+						45),
 				new Damage(
 						gW.tileAt(new Position(
 								2.5 * Tile.TILE_SIZE,
 								4.5 * Tile.TILE_SIZE,
 								0.5 * Tile.TILE_SIZE)),
-						0));
+						22));
 	}
 	
 	/**
@@ -506,7 +498,6 @@ public class WeaponTests {
 				printIncorrect(testSubCode, "Actual", hits[i], true);
 				failed = true;
 			}
-			i++;
 		}
 		
 		for (; i < desiredHits.length; i++) {
