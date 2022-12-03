@@ -19,7 +19,7 @@ import com.tumble.tank5.world_logic.Position;
 public class WorldTests {
 
 	/**
-	 * Make sure unloaded (and incorrectly-loaded) maps return an "unloaded" from their
+	 * Makes sure unloaded (and incorrectly-loaded) maps return an "unloaded" from their
 	 * {@link GameWorld#toString()}, rather than <code>null</code> or throw an
 	 * exception.
 	 */
@@ -31,7 +31,7 @@ public class WorldTests {
 		assert compare("unloaded", gW.toString());
 
 		// Null map string.
-		gW.loadFromString("");
+		gW.loadFromString(null);
 		assert compare("unloaded", gW.toString());
 		
 		// Empty map string.
@@ -85,7 +85,7 @@ public class WorldTests {
 	}
 	
 	/**
-	 * Tests {@link GameWorld#outOfBounds(double, double, double)}
+	 * Tests {@link GameWorld#outOfBounds(double, double, double)}.
 	 */
 	@Test
 	public void test_03() {
@@ -181,7 +181,7 @@ public class WorldTests {
 	}
 	
 	/**
-	 * Makes sure an Entity are spawned in (or not) properly.
+	 * Makes sure <code>Entities</code> are spawned in (or not) properly.
 	 * Also (by proxy) tests {@link GameWorld#entityAt(Position)}.
 	 */
 	@Test

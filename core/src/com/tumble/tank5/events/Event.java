@@ -13,9 +13,9 @@ import com.tumble.tank5.world_logic.GameWorld;
 public abstract class Event {
 	protected boolean finished = false;
 	
-	public abstract boolean applicable(GameWorld gW);
+	public abstract boolean applicable(GameWorld gW, int currentTick);
 	
-	public abstract void apply(GameWorld gW, Queue<Event> eventStream);
+	public abstract void apply(GameWorld gW, int currentTick, Queue<Event> eventStream);
 	
 	public final boolean isFinished() {
 		return finished;

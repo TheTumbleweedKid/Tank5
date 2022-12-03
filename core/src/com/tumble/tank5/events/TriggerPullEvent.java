@@ -7,33 +7,30 @@ import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
-public class FiringEvent extends Event {
+public class TriggerPullEvent extends Event {
 	private Entity attacker;
-	private int occurAtTick;
-	private Position from, to;
+	private Position[] positions;
 	
-	public FiringEvent(Entity attacker, int occurAtTick, Position from, Position to) {
+	public TriggerPullEvent(Entity attacker, Position ... positions) {
 		this.attacker = attacker;
-		this.occurAtTick = occurAtTick;
 		
-		this.from = from;
-		this.to = to;
+		this.positions = positions;
 	}
 
 	@Override
 	public boolean applicable(GameWorld gW, int currentTick) {
-		return !attacker.isDead() && gW.entityAt(from) == attacker && currentTick >= occurAtTick;
+		// Second condition only swaps one kind of inconsistent world state for another...
+		return !attacker.isDead() && gW.entityAt(positions[0]) == attacker;
 	}
 
 	@Override
 	public void apply(GameWorld gW, int currentTick, Queue<Event> eventStream) {
-		DamageEvent dE = new DamageEvent(
-				attacker,
-				attacker.getWeapon().fire(
-						attacker.getID(),
-						gW,
-						from,
-						to));
+		for (FiringEvent fE : attacker.getWeapon().getFiringEvents(
+				attacker.getID(),
+				gW,
+				positions)) {
+			eventStream.addLast(fE);
+		}
 		finished = true;
 	}
 }

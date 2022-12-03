@@ -5,6 +5,7 @@ import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Tile.TileType;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.world_logic.GameObject;
+import com.tumble.tank5.world_logic.Position;
 
 
 /**
@@ -16,23 +17,28 @@ import com.tumble.tank5.world_logic.GameObject;
 public class Damage {
 	private GameObject victim;
 	private int damage;
+	private Position contactPoint;
 	
 	/**
 	 * Constructs a <code>Damage</code> instance to store the amount of damage (to
 	 * be) taken by a single target from some event, and the <code>GameObject</code>
 	 * who received it (does not store the attacker).
 	 * 
-	 * @param victim - the targeted GameObject. Must not be <code>null</code> or
-	 *               {@link TileType#AIR};
+	 * @param victim       - the targeted GameObject. Must not be <code>null</code>
+	 *                     or {@link TileType#AIR};
 	 * 
-	 * @param damage - the amount of damage to deal to the <code>victim</code> (to
-	 *               subtract from their health via their
-	 *               {@link GameObject#damage(int, Entity)} method).
+	 * @param damage       - the amount of damage to deal to the <code>victim</code>
+	 *                     (to subtract from their health via their
+	 *                     {@link GameObject#damage(int, Entity)} method).
+	 * 
+	 * @param contactPoint - the place where the bullet entered the target
+	 *                     <code>Tile</code> or <code>Entity</code> (if the damage
+	 *                     was dealt by a bullet - otherwise <code>null</code>).
 	 * 
 	 * @throws GameError if the <code>victim</code> was <code>null</code> or
 	 *                   {@link TileType#AIR}.
 	 */
-	public Damage(GameObject victim, int damage) {
+	public Damage(GameObject victim, int damage, Position contactPoint) {
 		if (victim == null)
 			throw new GameError("A Damage's victim cannot be null!");
 		if (victim instanceof Tile && ((Tile) victim).getType() == TileType.AIR)
@@ -40,6 +46,7 @@ public class Damage {
 		
 		this.victim = victim;
 		this.damage = damage;
+		this.contactPoint = contactPoint;
 	}
 
 	/**
@@ -58,6 +65,17 @@ public class Damage {
 	 */
 	public int getDamage() {
 		return damage;
+	}
+	
+	/**
+	 * Gets the <code>Position</code> where the line of the damaging bullet first
+	 * contacted the victim (if the damage was dealt by a bullet).
+	 * 
+	 * @return the <code>Position</code> of the first contact point of the bullet if
+	 *         applicable, otherwise <code>null</code>.
+	 */
+	public Position getContactPoint() {
+		return contactPoint;
 	}
 	
 	@Override

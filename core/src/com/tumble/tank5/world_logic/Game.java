@@ -36,6 +36,7 @@ public class Game {
 	private boolean started = false;
 
 	private Round round;
+	private int tickNumber;
 
 	private Queue<Event> events;
 
@@ -144,13 +145,16 @@ public class Game {
 	public void update() {
 		if (round.isFinished()) {
 			if (!events.isEmpty()) {
-				events.first().apply(world, events);
-				if (events.first().isFinished())
-					events.removeFirst();
+				events.first().apply(world, tickNumber, events);
+				
+				if (events.first().isFinished()) events.removeFirst();
+				
+				tickNumber++;
 			} else {
 				round = round.next();
 				round.start();
 				// Note: events has already been emptied!
+				tickNumber = 0;
 			}
 		}
 	}

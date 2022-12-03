@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
@@ -17,6 +18,8 @@ import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Wall;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.GameUtils;
+import com.tumble.tank5.util.Pair;
+import com.tumble.tank5.weapons.Damage;
 
 /**
  * Stores and provides access to each <code>Entity</code> and <code>Tile</code>
@@ -120,6 +123,7 @@ public class GameWorld {
 		int z = 0;
 		
 		tiles = new Tile[newWorld.split("~").length][][];
+		entities.clear();
 
 		for (String level : newWorld.split("~")) {
 			String[] rows = level.split("\n");
@@ -359,7 +363,7 @@ public class GameWorld {
 		return tiles[(int) Math.floor(z / Tile.TILE_SIZE)][(int) Math.floor(y / Tile.TILE_SIZE)][(int) Math.floor(x / Tile.TILE_SIZE)];
 	}
 	
-	public GameObject[] getObstructions(Position from, Position to, double time) {
+	public Pair<Queue<GameObject>, Queue<Position>> getLineObstructions(Position from, Position to) {
 		/*
 		 * Tile fromTile = tileAt(from); Tile toTile = tileAt(to);
 		 * 
@@ -370,30 +374,28 @@ public class GameWorld {
 		if (outOfBounds(from) || to == null)
 			throw new GameError("Invalid start/end Positions for line obstruction!");
 		
-		Queue<GameObject> queue = rayTrace3D(from, to);
+		Pair<Queue<GameObject>, Queue<Position>> queues = rayTrace3D(from, to);
 		
 		Entity e = entityAt(from);
 		Tile t = tileAt(from);
 
 		// Check that the first object in the queue is not at the 'from' Position.
-		if (queue.notEmpty() && (queue.first().equals(e) || queue.first().equals(t))) {
-			queue.removeFirst();
+		if (queues.first().notEmpty() && (queues.first().first().equals(e) || queues.first().first().equals(t))) {
+			queues.first().removeFirst();
+			queues.second().removeFirst();
 		}
 		// Check that the second (now first) object in the queue is not at the 'from'
 		// Position.
-		if (queue.notEmpty() && (queue.first().equals(e) || queue.first().equals(t))) {
-			queue.removeFirst();
+		if (queues.first().notEmpty() && (queues.first().first().equals(e) || queues.first().first().equals(t))) {
+			queues.first().removeFirst();
+			queues.second().removeFirst();
 		}
 		
-		GameObject[] obstructions = new GameObject[queue.size];
-		
-		int i = 0;
-		while (queue.notEmpty()) {
-			obstructions[i] = queue.removeFirst();
-			i++;
-		}
-		
-		return obstructions;
+		return queues;
+	}
+	
+	public Queue<Pair<GameObject, Double>> getCircleObstructions(Position centre, double radius) {
+		return null;
 	}
 	
 	/**
@@ -411,8 +413,11 @@ public class GameWorld {
 	 * 
 	 * @return
 	 */
-	private Queue<GameObject> rayTrace3D(Position from, Position to) {
-		Queue<GameObject> hits = new Queue<GameObject>();
+	private Pair<Queue<GameObject>, Queue<Position>> rayTrace3D(Position from, Position to) {
+		Pair<Queue<GameObject>, Queue<Position>> hits =
+				new Pair<Queue<GameObject>, Queue<Position>>(
+						new Queue<GameObject>(),
+						new Queue<Position>());
 		
 		double from_x = from.x / Tile.TILE_SIZE;
 		double from_y = from.y / Tile.TILE_SIZE;
@@ -489,15 +494,17 @@ public class GameWorld {
 				Entity entity = entityAt(pos);
 				
 				if (tile != null
-						&& !tile.equals(hits.isEmpty() ? null : hits.first())
+						&& !tile.equals(hits.first().isEmpty() ? null : hits.first().first())
 						&& tile.stopsBullets()) {
-					hits.addLast(tile);
+					hits.first().addLast(tile);
+					hits.second().addLast(pos);
 				}
 				
 				if (entity != null
-						&& !entity.equals(hits.isEmpty() ? null : hits.first())
+						&& !entity.equals(hits.first().isEmpty() ? null : hits.first().first())
 						&& GameUtils.collideEntityBullet(entity, from, to)) {
-					hits.addLast(entity);
+					hits.first().addLast(entity);
+					hits.second().addLast(pos);
 				}
 			}
 			

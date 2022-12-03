@@ -18,12 +18,12 @@ public class DamageEvent extends Event {
 	}
 	
 	@Override
-	public boolean applicable(GameWorld gW) {
+	public boolean applicable(GameWorld gW, int currentTick) {
 		return true;
 	}
 
 	@Override
-	public void apply(GameWorld gW, Queue<Event> eventStream) {
+	public void apply(GameWorld gW, int currentTick, Queue<Event> eventStream) {
 		for (Damage damage : damages) {
 			if (damage.getVictim().damage(damage.getDamage(), attacker)) {
 				// eventStream.add(new DeathEvent);
