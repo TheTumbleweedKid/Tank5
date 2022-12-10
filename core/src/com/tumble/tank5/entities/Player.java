@@ -3,7 +3,6 @@ package com.tumble.tank5.entities;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.weapons.Weapon;
 import com.tumble.tank5.world_logic.Game;
-import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
 public class Player extends Entity {
@@ -36,19 +35,19 @@ public class Player extends Entity {
 	}
 
 	@Override
-	public boolean addAttack(GameWorld gW, Position... positions) {
+	public boolean addAttack(Game g, Position... positions) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean addWeaponSwitch(GameWorld gW) {
+	public boolean addWeaponSwitch() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean addReload(GameWorld gW) {
+	public boolean addReload() {
 		// TODO Auto-generated method stub
 		return false;
 	}

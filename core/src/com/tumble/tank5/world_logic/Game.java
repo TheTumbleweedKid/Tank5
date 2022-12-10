@@ -1,10 +1,12 @@
 package com.tumble.tank5.world_logic;
 
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
-import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.events.Event;
+import com.tumble.tank5.game_object.Move;
 import com.tumble.tank5.inputs.Input;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.IDManager;
@@ -37,8 +39,10 @@ public class Game {
 
 	private Round round;
 	private int tickNumber;
+	
+	private Map<Entity, Move> moves;
 
-	private Queue<Event> events;
+	private PriorityQueue<Event> events;
 
 	/**
 	 * Constructs a new <code>Game</code> (without loading a <code>GameWorld</code>
@@ -68,6 +72,8 @@ public class Game {
 		IDManager.registerGame(this);
 
 		world = new GameWorld();
+		
+		events = new PriorityQueue<Event>();
 	}
 	
 	/**
@@ -139,15 +145,19 @@ public class Game {
 			return false;
 		}
 
-		return round.shouldAccept(i) && i.apply(world);
+		return round.shouldAccept(i) && i.apply(this);
+	}
+
+	public Map<Entity, Move> getMoves() {
+		return moves;
 	}
 
 	public void update() {
 		if (round.isFinished()) {
 			if (!events.isEmpty()) {
-				events.first().apply(world, tickNumber, events);
+				events.peek().apply(world, tickNumber, events);
 				
-				if (events.first().isFinished()) events.removeFirst();
+				if (events.peek().isFinished()) events.poll();
 				
 				tickNumber++;
 			} else {

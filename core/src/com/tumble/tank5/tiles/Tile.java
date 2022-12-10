@@ -1,17 +1,15 @@
 package com.tumble.tank5.tiles;
 
-import com.tumble.tank5.world_logic.GameWorld;
-import com.tumble.tank5.world_logic.Position;
-
 import java.util.HashSet;
+import java.util.Queue;
 import java.util.Set;
 
-import com.badlogic.gdx.scenes.scene2d.InputEvent.Type;
-import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.events.Event;
+import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.world_logic.DirectionVector;
-import com.tumble.tank5.world_logic.GameObject;
+import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.Position;
 
 /**
  * Controls/stores the properties of a tile on the game board.
@@ -63,16 +61,13 @@ public abstract class Tile extends GameObject {
 
 	public abstract boolean stopsFalling();
 
-	public boolean damage(int damage, Entity attacker, GameWorld gW, Queue<Event> eventStream) {
-		if (type == TileType.RUBBLE) return false;
+	public boolean die(Entity attacker, GameWorld gW, Queue<Event> eventStream) {
+		if (type == TileType.RUBBLE || getHealth() <= 0) return false;
 		
-		if (damage(damage, attacker)) {
-			for (Tile t : supports) {
-				t.removeSupport(this, attacker, gW, eventStream);
-			}
-			return true;
+		for (Tile t : supports) {
+			t.removeSupport(this, attacker, gW, eventStream);
 		}
-		return false;
+		return true;
 	}
 
 	/**

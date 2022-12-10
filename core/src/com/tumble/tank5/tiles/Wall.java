@@ -1,6 +1,5 @@
 package com.tumble.tank5.tiles;
 
-import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 import com.tumble.tank5.world_logic.DirectionVector;
 

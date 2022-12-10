@@ -1,11 +1,9 @@
 package com.tumble.tank5.events;
 
-import com.badlogic.gdx.utils.Queue;
+import java.util.Queue;
 
 import com.tumble.tank5.entities.Entity;
-import com.tumble.tank5.util.Pair;
 import com.tumble.tank5.weapons.Damage;
-import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 
 public class DamageEvent extends Event {
@@ -13,6 +11,8 @@ public class DamageEvent extends Event {
 	private Damage[] damages;
 
 	public DamageEvent(Entity attacker, Damage ... damages) {
+		super(-1); // To be applied ASAP!
+		
 		this.attacker = attacker;
 		this.damages = damages;
 	}

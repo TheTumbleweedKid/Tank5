@@ -1,6 +1,7 @@
-package com.tumble.tank5.world_logic;
+package com.tumble.tank5.game_object;
 
 import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.world_logic.Position;
 
 public abstract class GameObject {
 	private Position position;
@@ -31,6 +32,11 @@ public abstract class GameObject {
 		this.attacker = attacker;
 		
 		return health <= 0;
+	}
+	
+	final void setPosition(Position newPosition) {
+		// Package-private.
+		if (newPosition != null) position = newPosition;
 	}
 	
 	public final Position getPosition() {

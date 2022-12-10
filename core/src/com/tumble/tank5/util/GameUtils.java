@@ -2,8 +2,6 @@ package com.tumble.tank5.util;
 
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.Ray;
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.world_logic.Position;
 

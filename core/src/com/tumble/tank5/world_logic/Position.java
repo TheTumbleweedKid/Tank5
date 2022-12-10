@@ -75,6 +75,10 @@ public class Position {
 		return (int) Math.floor(z / Tile.TILE_SIZE);
 	}
 	
+	public Position move(DirectionVector.Direction dir) {
+		return move(dir.asVector());
+	}
+	
 	/**
 	 * Returns a new <code>Position</code> that has been moved from the location of
 	 * this <code>Position</code> by a given <code>DirectionVector</code> (see
@@ -87,6 +91,13 @@ public class Position {
 	 */
 	public Position move(DirectionVector dir) {
 		return new Position(x + dir.getX(), y + dir.getY(), z + dir.getZ());
+	}
+	
+	public Position tileCentre() {
+		return new Position(
+				(getX() + 0.5) * Tile.TILE_SIZE,
+				(getY() + 0.5) * Tile.TILE_SIZE,
+				(getZ() + 0.5) * Tile.TILE_SIZE);
 	}
 	
 	public boolean sameTile(Position other) {

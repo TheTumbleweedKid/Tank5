@@ -1,9 +1,8 @@
 package com.tumble.tank5.events;
 
-import com.badlogic.gdx.utils.Queue;
+import java.util.Queue;
 
 import com.tumble.tank5.entities.Entity;
-import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
@@ -12,6 +11,8 @@ public class TriggerPullEvent extends Event {
 	private Position[] positions;
 	
 	public TriggerPullEvent(Entity attacker, Position ... positions) {
+		super(0); // Should occur immediately at the start of each Round.
+		
 		this.attacker = attacker;
 		
 		this.positions = positions;
@@ -29,7 +30,7 @@ public class TriggerPullEvent extends Event {
 				attacker.getID(),
 				gW,
 				positions)) {
-			eventStream.addLast(fE);
+			eventStream.offer(fE);
 		}
 		finished = true;
 	}

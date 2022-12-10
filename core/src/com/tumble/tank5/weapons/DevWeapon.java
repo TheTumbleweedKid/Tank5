@@ -10,7 +10,6 @@ public class DevWeapon extends Weapon {
 			int burstSize,
 			int magSize,
 			int reserveBullets,
-			double betweenShots,
 			double baseRange) {
 		super(
 				damage, // Custom damage.

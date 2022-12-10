@@ -1,5 +1,7 @@
 package com.tumble.tank5.entities;
 
+import com.tumble.tank5.game_object.GameObject;
+import com.tumble.tank5.game_object.Move;
 import com.tumble.tank5.tiles.StairCase;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Tile.TileType;
@@ -9,7 +11,6 @@ import com.tumble.tank5.weapons.Weapon;
 import com.tumble.tank5.world_logic.DirectionVector;
 import com.tumble.tank5.world_logic.DirectionVector.Direction;
 import com.tumble.tank5.world_logic.Game;
-import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
@@ -100,7 +101,7 @@ public abstract class Entity extends GameObject {
 	}
 	
 	public abstract void spawn(Position pos);
-	
+		
 	/**
 	 * Attempts to add a new movement on top of whatever movement is already planned
 	 * for this <code>Entity</code> for the next turn.
@@ -112,33 +113,44 @@ public abstract class Entity extends GameObject {
 	 * @return <code>true</code> if the move was successfully added, or
 	 *         <code>false</code> if it was invalid in some way.
 	 */
-	public boolean addMove(DirectionVector move, GameWorld gW) {
+	public boolean canStep(Move move, GameWorld gW) {
 		if (move == null || gW == null || !gW.hasEntity(this))
 			return false;
-
-		DirectionVector newMove = plannedMove.combine(move);
-		if (newMove.equals(plannedMove))
+		
+		
+		
+		return true;
+	}
+	
+	/**
+	 * Should only be called during the input phase.
+	 * 
+	 * @param direction
+	 * @param gW
+	 * @return
+	 */
+	public boolean canMove(Direction direction, GameWorld gW) {
+		if (direction == null || gW == null || !gW.hasEntity(this))
 			return false;
+		
+		if (direction == Direction.NONE) return true;
 
-		Direction newDir = Direction.asEnum(newMove);
-		Position newPos = startPos.move(newMove);
-
-		Tile currentTile = gW.tileAt(startPos);
+		Tile currentTile = gW.tileAt(getPosition());
+		
+		Position newPos = getPosition().move(direction);
 
 		if (currentTile.getType() == TileType.STAIRS) {
-			newPos = newPos.move(((StairCase) currentTile).getHeightChange(newMove));
+			newPos = newPos.move(((StairCase) currentTile).getHeightChange(direction.asVector()));
 		}
 
 		Tile newTile = gW.tileAt(newPos);
 
-		if (newDir != Direction.NONE) {
-			if (newTile.isObstruction(newMove))
-				return false;
+		if (newTile.isObstruction(direction.asVector()))
+			return false;
 
-			if ((newDir == Direction.UP || newDir == Direction.DOWN) && currentTile.getType() != TileType.LADDER)
-				return false;
-		}
-
+		if ((direction == Direction.UP || direction == Direction.DOWN) && currentTile.getType() != TileType.LADDER)
+			return false;
+		
 		return true;
 	}
 
@@ -157,19 +169,17 @@ public abstract class Entity extends GameObject {
 	 * @return <code>true</code> if the attack was successfully planned, or
 	 *         <code>false</code> if it was invalid in some way.
 	 */
-	public abstract boolean addAttack(GameWorld gW, Position... positions);
+	public abstract boolean addAttack(Game g, Position... positions);
 
 	/**
 	 * Attempts to make a weapon-switch the planned action for this
 	 * <code>Entity</code> for the next turn. If the <code>Entity</code> can validly
 	 * switch its weapon, whatever existing action it had planned will be forgotten.
 	 * 
-	 * @param gW - the <code>GameWorld</code> the <code>Entity</code> exists in.
-	 * 
 	 * @return <code>true</code> if the weapon-switching was successfully planned,
 	 *         or <code>false</code> if it was invalid in some way.
 	 */
-	public boolean addWeaponSwitch(GameWorld gW) {
+	public boolean addWeaponSwitch() {
 		if (weaponIndex != -1 && weapons.length != 0) {
 			plannedAction = Action.SWITCH_WEAPON;
 			return true;
@@ -183,12 +193,10 @@ public abstract class Entity extends GameObject {
 	 * <code>Entity</code> can validly reload its equipped weapon, whatever existing
 	 * action it had planned will be forgotten.
 	 * 
-	 * @param gW - the <code>GameWorld</code> the <code>Entity</code> exists in.
-	 * 
 	 * @return <code>true</code> if the weapon-reload was successfully planned, or
 	 *         <code>false</code> if it was invalid in some way.
 	 */
-	public boolean addReload(GameWorld gW) {
+	public boolean addReload() {
 		if (weapons[weaponIndex].ableToReload()) {
 			plannedAction = Action.RELOAD;
 			return true;
@@ -235,10 +243,6 @@ public abstract class Entity extends GameObject {
 	
 	public final float getRadius() {
 		return radius;
-	}
-	
-	public Position getInitialPosition() {
-		return startPos;
 	}
 	
 	/**

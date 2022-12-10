@@ -1,6 +1,6 @@
 package com.tumble.tank5.events;
 
-import com.badlogic.gdx.utils.Queue;
+import java.util.Queue;
 
 import com.tumble.tank5.world_logic.GameWorld;
 
@@ -10,8 +10,17 @@ import com.tumble.tank5.world_logic.GameWorld;
  * @author Tumbl
  *
  */
-public abstract class Event {
+public abstract class Event implements Comparable<Event> {
+	protected int tickNumber;
 	protected boolean finished = false;
+	
+	public Event(int tickNumber) {
+		this.tickNumber = tickNumber;
+	}
+	
+	public int compareTo(Event other) {
+		return tickNumber - other.tickNumber;
+	}
 	
 	public abstract boolean applicable(GameWorld gW, int currentTick);
 	

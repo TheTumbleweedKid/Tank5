@@ -1,7 +1,7 @@
 package com.tumble.tank5.inputs;
 
 import com.tumble.tank5.entities.Entity;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.Game;
 import com.tumble.tank5.world_logic.Position;
 
 /**
@@ -31,14 +31,14 @@ public class EntityAction extends Input {
 	}
 	
 	@Override
-	public boolean apply(GameWorld gW) {
+	public boolean apply(Game g) {
 		switch (action) {
 		case FIRE:
-			return entity.addAttack(gW, positions);
+			return entity.addAttack(g, positions);
 		case SWITCH_WEAPON:
-			return entity.addWeaponSwitch(gW);
+			return entity.addWeaponSwitch();
 		case RELOAD:
-			return entity.addReload(gW);
+			return entity.addReload();
 		default:
 			return false;
 		}

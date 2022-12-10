@@ -1,18 +1,13 @@
 package com.tumble.tank5.weapons;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.badlogic.gdx.utils.Queue;
+
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.events.FiringEvent;
-import com.tumble.tank5.events.MovementEvent;
+import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.tiles.Tile;
-import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.GameUtils;
 import com.tumble.tank5.util.Pair;
-import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
@@ -146,8 +141,8 @@ public abstract class Weapon {
 			double angle = baseAngle + GameUtils.random(spread);
 			
 			firingEvents[i] = new FiringEvent(
-					gW.getEntity(ownerId),
 					fireDelay + i * cooldown,
+					gW.getEntity(ownerId),
 					positions[0],
 					new Position(
 							positions[0].x + range * Math.cos(angle),

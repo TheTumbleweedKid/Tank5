@@ -47,8 +47,8 @@ public class Shotgun extends Weapon {
 		
 		return new FiringEvent[] {
 				new FiringEvent(
-						gW.getEntity(ownerId),
 						fireDelay,
+						gW.getEntity(ownerId),
 						positions[0],
 						new Position(
 								positions[0].x + baseRange * Math.cos(angle),

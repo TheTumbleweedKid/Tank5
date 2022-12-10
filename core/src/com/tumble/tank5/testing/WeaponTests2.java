@@ -6,6 +6,8 @@ import org.junit.jupiter.api.TestInstance;
 import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.entities.Player;
+import com.tumble.tank5.events.MovementEvent;
+import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Wall;
 import com.tumble.tank5.util.IDManager;
@@ -13,7 +15,6 @@ import com.tumble.tank5.weapons.Damage;
 import com.tumble.tank5.weapons.DevWeapon;
 import com.tumble.tank5.weapons.Weapon;
 import com.tumble.tank5.world_logic.Game;
-import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
@@ -34,14 +35,14 @@ public class WeaponTests2 {
 	
 		weapon = new DevWeapon(
 			0,
+			MovementEvent.MOVEMENT_TICKS,
+			0,
 			0,
 			1,
-			0,
-			0,
 			1,
-			0.0,
+			10,
 			10 * Tile.TILE_SIZE);
-	
+		
 		shooter = new Player(
 			g,
 			IDManager.nextID(g),
@@ -78,7 +79,7 @@ public class WeaponTests2 {
 				0.5 * Tile.TILE_SIZE);
 		
 		assert correctValues(
-				toArray(gW.getObstructions(shooterPos, shootAt, 0).first()),
+				toArray(gW.getLineObstructions(shooterPos, shootAt).first()),
 				gW.tileAt(new Position(
 						2.5 * Tile.TILE_SIZE,
 						3.5 * Tile.TILE_SIZE,
@@ -104,7 +105,7 @@ public class WeaponTests2 {
 				0.5 * Tile.TILE_SIZE);
 		
 		assert correctValues(
-				toArray(gW.getObstructions(shooterPos, shootAt, 0).first()),
+				toArray(gW.getLineObstructions(shooterPos, shootAt).first()),
 				gW.tileAt(new Position(
 						5.5 * Tile.TILE_SIZE,
 						1.5 * Tile.TILE_SIZE,
@@ -130,7 +131,7 @@ public class WeaponTests2 {
 				0.5 * Tile.TILE_SIZE);
 		
 		assert correctValues(
-				toArray(gW.getObstructions(shooterPos, shootAt, 0).first()),
+				toArray(gW.getLineObstructions(shooterPos, shootAt).first()),
 				gW.tileAt(new Position(
 						4.5 * Tile.TILE_SIZE,
 						0.5 * Tile.TILE_SIZE,
@@ -156,7 +157,7 @@ public class WeaponTests2 {
 				0.5 * Tile.TILE_SIZE);
 		
 		assert correctValues(
-				toArray(gW.getObstructions(shooterPos, shootAt, 0).first()));
+				toArray(gW.getLineObstructions(shooterPos, shootAt).first()));
 	}
 	
 	// **** ADVANCED OBSTRUCTION DETECTION ****
@@ -195,7 +196,7 @@ public class WeaponTests2 {
 				0.0 * Tile.TILE_SIZE);
 		
 		assert correctValues(
-				toArray(gW.getObstructions(shooterPos, shootAt, 0).first()),
+				toArray(gW.getLineObstructions(shooterPos, shootAt).first()),
 				gW.tileAt(new Position(
 						0.0 * Tile.TILE_SIZE,
 						1.5 * Tile.TILE_SIZE,
@@ -236,7 +237,6 @@ public class WeaponTests2 {
 		assert correctValues(
 				Weapon.singleBullet(
 						shooter.getID(),
-						0.0,
 						gW,
 						shooterPos,
 						shootAt,
@@ -259,7 +259,6 @@ public class WeaponTests2 {
 		assert correctValues(
 				Weapon.singleBullet(
 						shooter.getID(),
-						0.0,
 						gW,
 						shooterPos,
 						shootAt,
@@ -282,7 +281,6 @@ public class WeaponTests2 {
 		assert correctValues(
 				Weapon.singleBullet(
 						shooter.getID(),
-						0.0,
 						gW,
 						shooterPos,
 						shootAt,

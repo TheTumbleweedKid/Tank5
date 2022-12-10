@@ -1,8 +1,6 @@
 package com.tumble.tank5.tiles;
 
 import com.tumble.tank5.world_logic.DirectionVector;
-import com.tumble.tank5.world_logic.DirectionVector.Direction;
-import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
 public class StairCase extends Tile {
@@ -48,7 +46,7 @@ public class StairCase extends Tile {
 
 	@Override
 	public String toString() {
-		switch (Direction.asEnum(upDirection)) {
+		switch (upDirection.asEnum()) {
 		case N:
 			return "v";
 		case E:

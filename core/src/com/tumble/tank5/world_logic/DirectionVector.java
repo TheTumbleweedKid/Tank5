@@ -37,38 +37,8 @@ public class DirectionVector {
 		DOWN,	// -1 z-layer
 		NONE;	// Stationary
 		
-		public static Direction asEnum(DirectionVector v) {
-			if (v.z == 1) {
-				return UP;
-			} else if (v.z == -1) {
-				return DOWN;
-			} else {
-				if (v.x == 1) {
-					if (v.y == 1) {
-						return NE;
-					} else if (v.y == -1) {
-						return SE;
-					} else {
-						return E;
-					}
-				} else if (v.x == -1) {
-					if (v.y == 1) {
-						return NW;
-					} else if (v.y == -1) {
-						return SW;
-					} else {
-						return W;
-					}
-				} else {
-					if (v.y == 1) {
-						return N;
-					} else if (v.y == -1) {
-						return S;
-					} else {
-						return NONE;
-					}
-				}
-			}
+		public DirectionVector asVector() {
+			return new DirectionVector(this);
 		}
 	}
 
@@ -91,6 +61,66 @@ public class DirectionVector {
 			this.x = 0;
 			this.y = 0;
 			this.z = ensureLength(z);
+		}
+	}
+	
+	private DirectionVector(Direction dir) {
+		switch (dir) {
+		case N:
+			x = 0;
+			y = 1;
+			z = 0;
+			break;
+		case NE:
+			x = 1;
+			y = 1;
+			z = 0;
+			break;
+		case E:
+			x = 1;
+			y = 0;
+			z = 0;
+			break;
+		case SE:
+			x = 1;
+			y = -1;
+			z = 0;
+			break;
+		case S:
+			x = 0;
+			y = -1;
+			z = 0;
+			break;
+		case SW:
+			x = -1;
+			y = -1;
+			z = 0;
+			break;
+		case W:
+			x = -1;
+			y = 0;
+			z = 0;
+			break;
+		case NW:
+			x = -1;
+			y = 1;
+			z = 0;
+			break;
+		case UP:
+			x = 0;
+			y = 0;
+			z = 1;
+			break;
+		case DOWN:
+			x = 0;
+			y = 0;
+			z = -1;
+			break;
+		default:
+			// Direction.NONE.
+			x = 0;
+			y = 0;
+			z = 0;
 		}
 	}
 
@@ -128,9 +158,13 @@ public class DirectionVector {
 	 * 
 	 * @param other - the <code>DirectionVector</code> to combine with this one.
 	 * 
-	 * @return the combined <code>DirectionVector</code>.
+	 * @return the combined <code>DirectionVector</code>, or a new copy of this
+	 *         <code>DirectionVector</code> if <code>other</code> was
+	 *         <code>null</code>.
 	 */
 	public DirectionVector combine(DirectionVector other) {
+		if (other == null) return new DirectionVector(x, y, z);
+		
 		return combine(other.x, other.y, other.z);
 	}
 	
@@ -158,6 +192,40 @@ public class DirectionVector {
 	 */
 	public DirectionVector reverse() {
 		return new DirectionVector(-x, -y, -z);
+	}
+	
+	public Direction asEnum() {
+		if (z == 1) {
+			return Direction.UP;
+		} else if (z == -1) {
+			return Direction.DOWN;
+		} else {
+			if (x == 1) {
+				if (y == 1) {
+					return Direction.NE;
+				} else if (y == -1) {
+					return Direction.SE;
+				} else {
+					return Direction.E;
+				}
+			} else if (x == -1) {
+				if (y == 1) {
+					return Direction.NW;
+				} else if (y == -1) {
+					return Direction.SW;
+				} else {
+					return Direction.W;
+				}
+			} else {
+				if (y == 1) {
+					return Direction.N;
+				} else if (y == -1) {
+					return Direction.S;
+				} else {
+					return Direction.NONE;
+				}
+			}
+		}
 	}
 
 	@Override

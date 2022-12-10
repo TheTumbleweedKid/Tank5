@@ -1,25 +1,22 @@
 package com.tumble.tank5.world_logic;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.tiles.Air;
 import com.tumble.tank5.tiles.Ladder;
 import com.tumble.tank5.tiles.StairCase;
 import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.tiles.Tile.TileType;
 import com.tumble.tank5.tiles.Wall;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.GameUtils;
 import com.tumble.tank5.util.Pair;
-import com.tumble.tank5.weapons.Damage;
 
 /**
  * Stores and provides access to each <code>Entity</code> and <code>Tile</code>
@@ -394,8 +391,36 @@ public class GameWorld {
 		return queues;
 	}
 	
-	public Queue<Pair<GameObject, Double>> getCircleObstructions(Position centre, double radius) {
-		return null;
+	public Queue<Pair<GameObject, Double>> getSphereObstructions(Position centre, double radius) {
+		Queue<Pair<GameObject, Double>> obstructions = new Queue<Pair<GameObject, Double>>();
+		
+		for (int z = Math.max(0, (int) Math.floor((centre.z - radius) / Tile.TILE_SIZE)); z < Math.min(worldDimensions[0], (int) Math.ceil((centre.z + radius) / Tile.TILE_SIZE)); z++) {
+			for (int y = Math.max(0, (int) Math.floor((centre.y - radius) / Tile.TILE_SIZE)); y < Math.min(worldDimensions[1], (int) Math.ceil((centre.y + radius) / Tile.TILE_SIZE)); y++) {
+				for (int x = Math.max(0, (int) Math.floor((centre.x - radius) / Tile.TILE_SIZE)); x < Math.min(worldDimensions[2], (int) Math.ceil((centre.x + radius) / Tile.TILE_SIZE)); x++) {
+					double dist = Tile.TILE_SIZE * Math.sqrt(
+							(centre.x - x + 0.5) * (centre.x - x + 0.5) + 
+							(centre.y - y + 0.5) * (centre.y - y + 0.5) +
+							(centre.z - z + 0.5) * (centre.z - z + 0.5));
+					if (dist <= radius) {
+						if (tiles[z][y][x].getType() != TileType.AIR) {
+							obstructions.addLast(
+									new Pair<GameObject, Double>(tiles[z][y][x], dist));
+						}
+
+						Entity entity = entityAt(new Position(
+								x * Tile.TILE_SIZE,
+								y * Tile.TILE_SIZE,
+								z * Tile.TILE_SIZE));
+						if (entity != null) {
+							obstructions.addLast(
+									new Pair<GameObject, Double>(entity, dist));
+						}
+					}
+				}
+			}
+		}
+		
+		return obstructions;
 	}
 	
 	/**
@@ -439,6 +464,7 @@ public class GameWorld {
 		double dt_dy = 1.0 / dy;
 		double dt_dz = 1.0 / dz;
 
+		@SuppressWarnings("unused")
 		double t = 0;
 
 		int n = 1;

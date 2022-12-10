@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.badlogic.gdx.utils.Queue;
+import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.events.MovementEvent;
+import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.Pair;
-import com.tumble.tank5.world_logic.GameObject;
 import com.tumble.tank5.world_logic.GameWorld;
 import com.tumble.tank5.world_logic.Position;
 
@@ -45,15 +46,7 @@ public class RPG extends Weapon {
 	}
 
 	@Override
-	public Damage[] fire(int ownerId, GameWorld gW, Position from, Position to) {
-		double range = Math.sqrt(
-				(to.x - from.x) * (to.x - from.x)
-				+ (to.y - from.y) * (to.y - from.y));
-		double angle = Math.atan2(
-				to.y - from.y,
-				to.x - from.x);
-		double zRatio = (to.z - from.z) / range;
-		
+	public Damage[] fire(int ownerId, GameWorld gW, Position from, Position to) {		
 		Pair<Queue<GameObject>, Queue<Position>> lineHits = gW.getLineObstructions(from, to);
 		
 		if (lineHits.first().size == 0) return new Damage[0]; // Do not detonate on a miss.
@@ -63,11 +56,19 @@ public class RPG extends Weapon {
 
 		List<Damage> damages = new ArrayList<Damage>();
 		
-		damages.add(new Damage(hit, damage, epicentre));
+		damages.add(
+				new Damage(
+						hit,
+						(int) (damage * (hit instanceof Entity ? 1 : tileDamageBonus)),
+						epicentre));
 		
 		// TODO: Make this less bloody primitive!
-		for (Pair<GameObject, Double> pair : gW.getCircleObstructions(epicentre, blastRadius)) {
-			
+		for (Pair<GameObject, Double> pair : gW.getSphereObstructions(epicentre, blastRadius)) {
+			damages.add(
+					new Damage(
+							pair.first(),
+							(int) ((int) (blastDamage * pair.second() / blastRadius) * (hit instanceof Entity ? 1 : tileDamageBonus)),
+							pair.first().getPosition()));
 		}
 		
 		return damages.toArray(new Damage[0]);
