@@ -11,6 +11,8 @@ import com.tumble.tank5.tiles.Air;
 import com.tumble.tank5.tiles.Rubble;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Tile.TileType;
+import com.tumble.tank5.util.DirectionVector;
+import com.tumble.tank5.util.Position;
 import com.tumble.tank5.weapons.Damage;
 
 public class RubbleManager {

@@ -1,7 +1,7 @@
 package com.tumble.tank5.tiles;
 
-import com.tumble.tank5.world_logic.DirectionVector;
-import com.tumble.tank5.world_logic.Position;
+import com.tumble.tank5.util.DirectionVector;
+import com.tumble.tank5.util.Position;
 
 public class Rubble extends Tile {
 

@@ -11,7 +11,7 @@ import com.tumble.tank5.world_logic.GameWorld;
  *
  */
 public abstract class Event implements Comparable<Event> {
-	protected int tickNumber;
+	public final int tickNumber;
 	protected boolean finished = false;
 	
 	public Event(int tickNumber) {

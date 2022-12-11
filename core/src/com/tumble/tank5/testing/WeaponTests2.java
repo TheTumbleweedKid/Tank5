@@ -11,12 +11,12 @@ import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Wall;
 import com.tumble.tank5.util.IDManager;
+import com.tumble.tank5.util.Position;
 import com.tumble.tank5.weapons.Damage;
 import com.tumble.tank5.weapons.DevWeapon;
 import com.tumble.tank5.weapons.Weapon;
 import com.tumble.tank5.world_logic.Game;
 import com.tumble.tank5.world_logic.GameWorld;
-import com.tumble.tank5.world_logic.Position;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class WeaponTests2 {
@@ -30,7 +30,7 @@ public class WeaponTests2 {
 	Position shooterPos, shootAt;
 	
 	public WeaponTests2() {
-		g = new Game(true, 1);
+		g = new Game(true, 1, 0);
 		gW = g.getWorld();
 	
 		weapon = new DevWeapon(
@@ -58,19 +58,20 @@ public class WeaponTests2 {
 	 */
 	@Test
 	public void test_01() {
-		gW.loadFromString(
+		g.loadMap(
 				"  W    \n" +
 				"  W    \n" +
 				"       \n" +
 				"     WW\n" +
-				"  W WW ");
+				"  W WW ",
+				false);
 		
 		shooterPos = new Position(
 				2.5 * Tile.TILE_SIZE,
 				1.5 * Tile.TILE_SIZE,
 				0.5 * Tile.TILE_SIZE);
 
-		gW.spawnEntity(shooter, shooterPos, g);
+		g.addEntity(shooter, shooterPos);
 		
 		// A position directly north of the shooter.
 		shootAt = new Position(
@@ -164,7 +165,11 @@ public class WeaponTests2 {
 	
 	@Test
 	public void test_05() {
-		gW.loadFromString(
+		g = new Game(true, 1, 0);
+		
+		gW = g.getWorld();
+		
+		g.loadMap(
 				"  W    \n" +
 				"  W    \n" +
 				"       \n" +
@@ -181,14 +186,15 @@ public class WeaponTests2 {
 				"       \n" +
 				"       \n" +
 				"     <W\n" +
-				"  # W  ");
+				"  # W  ",
+				false);
 		
 		shooterPos = new Position(
 				2.5 * Tile.TILE_SIZE,
 				1.5 * Tile.TILE_SIZE,
 				0.5 * Tile.TILE_SIZE);
 		
-		gW.spawnEntity(shooter, shooterPos, g);
+		g.addEntity(shooter, shooterPos);
 		
 		shootAt = new Position(
 				0.0 * Tile.TILE_SIZE,
@@ -214,19 +220,24 @@ public class WeaponTests2 {
 	 */
 	@Test
 	public void test_20() {
-		gW.loadFromString(
+		g = new Game(true, 1, 0);
+		
+		gW = g.getWorld();
+		
+		g.loadMap(
 				"  W    \n" +
 				"  W    \n" +
 				"       \n" +
 				"     WW\n" +
-				"  W WW ");
+				"  W WW ",
+				false);
 		
 		shooterPos = new Position(
 				2.5 * Tile.TILE_SIZE,
 				1.5 * Tile.TILE_SIZE,
 				0.5 * Tile.TILE_SIZE);
 
-		gW.spawnEntity(shooter, shooterPos, g);
+		g.addEntity(shooter, shooterPos);
 		
 		// A position directly north of the shooter.
 		shootAt = new Position(

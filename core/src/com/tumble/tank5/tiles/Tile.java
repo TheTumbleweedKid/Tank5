@@ -7,9 +7,9 @@ import java.util.Set;
 import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.events.Event;
 import com.tumble.tank5.game_object.GameObject;
-import com.tumble.tank5.world_logic.DirectionVector;
+import com.tumble.tank5.util.DirectionVector;
+import com.tumble.tank5.util.Position;
 import com.tumble.tank5.world_logic.GameWorld;
-import com.tumble.tank5.world_logic.Position;
 
 /**
  * Controls/stores the properties of a tile on the game board.
@@ -20,7 +20,7 @@ import com.tumble.tank5.world_logic.Position;
 public abstract class Tile extends GameObject {
 	public static final double TILE_SIZE = 10.0;
 	
-	protected static final DirectionVector NO_MOVEMENT = new DirectionVector(0, 0, 0);
+	protected static final DirectionVector NO_MOVEMENT = DirectionVector.Direction.NONE.asVector();
 	
 	private Set<Tile> supports = new HashSet<Tile>();
 	private Set<Tile> supportedBy = new HashSet<Tile>();

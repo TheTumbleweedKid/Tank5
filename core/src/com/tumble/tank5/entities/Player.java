@@ -1,9 +1,9 @@
 package com.tumble.tank5.entities;
 
 import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.util.Position;
 import com.tumble.tank5.weapons.Weapon;
 import com.tumble.tank5.world_logic.Game;
-import com.tumble.tank5.world_logic.Position;
 
 public class Player extends Entity {
 	private static final int STARTING_HEALTH = 100;
@@ -35,27 +35,8 @@ public class Player extends Entity {
 	}
 
 	@Override
-	public boolean addAttack(Game g, Position... positions) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean addWeaponSwitch() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean addReload() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public boolean isDead() {
-		// TODO Auto-generated method stub
-		return false;
+		return getHealth() <= 0;
 	}
 	
 	@Override

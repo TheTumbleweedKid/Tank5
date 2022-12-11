@@ -8,8 +8,8 @@ import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.GameUtils;
 import com.tumble.tank5.util.Pair;
+import com.tumble.tank5.util.Position;
 import com.tumble.tank5.world_logic.GameWorld;
-import com.tumble.tank5.world_logic.Position;
 
 /**
  * Encompasses all weapons in the game - those wielded by NPCs and <code>Player</code>s alike.
@@ -124,6 +124,11 @@ public abstract class Weapon {
 		return !isReloading && magBullets < magSize && reserveBullets > 0;
 	}
 	
+	public boolean isInRange(Position from, Position to) {
+		return (to.x - from.x) * (to.x - from.x) + (to.y - from.y) * (to.y - from.y)
+				+ (to.z - from.z) * (to.z - from.z) <= baseRange * baseRange;
+	}
+	
 	public FiringEvent[] getFiringEvents(int ownerId, GameWorld gW, Position... positions) {
 		FiringEvent[] firingEvents = new FiringEvent[burstSize];
 		
@@ -181,12 +186,30 @@ public abstract class Weapon {
 	
 	/**
 	 * Should be <code>protected</code>.
-	 * @param ownerId
+	 * 
+	 * @param ownerId - the ID
+	 * 
 	 * @param time
+	 * 
 	 * @param gW
-	 * @param from
-	 * @param to
-	 * @param damage
+	 * 
+	 * @param from    - the start <code>Position</code> of the bullet. Presumably
+	 *                slightly off-centre from the <code>Tile</code> it is being
+	 *                fired from, but it makes no difference;
+	 *                <code>GameObject</code>s on the same <code>Tile</code> as this
+	 *                location (including the <code>Tile</code> itself) are ignored
+	 *                by {@link GameWorld#getLineObstructions(Position, Position)}.
+	 * 
+	 * @param to      - the end <code>Position</code> of the bullet. Not
+	 *                (necessarily) where the used clicked to aim it, but where the
+	 *                bullet should stop if it doesn't hit anything (that it can't
+	 *                penetrate though). All range and angle variations should have
+	 *                already have been applied to derive the location of this
+	 *                <code>Position</code>.
+	 * 
+	 * @param damage  - the TOTAL amount of damage the bullet has to dish out to its
+	 *                victim(s).
+	 * 
 	 * @return
 	 */
 	public static Damage[] singleBullet(

@@ -9,8 +9,8 @@ import com.tumble.tank5.events.MovementEvent;
 import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.Pair;
+import com.tumble.tank5.util.Position;
 import com.tumble.tank5.world_logic.GameWorld;
-import com.tumble.tank5.world_logic.Position;
 
 /**
  * Fires a hitscan rocket that deals high direct-hit ('contact') and

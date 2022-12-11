@@ -1,18 +1,17 @@
 package com.tumble.tank5.entities;
 
 import com.tumble.tank5.game_object.GameObject;
-import com.tumble.tank5.game_object.Move;
 import com.tumble.tank5.tiles.StairCase;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Tile.TileType;
+import com.tumble.tank5.util.DirectionVector;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.IDManager;
+import com.tumble.tank5.util.Position;
+import com.tumble.tank5.util.DirectionVector.Direction;
 import com.tumble.tank5.weapons.Weapon;
-import com.tumble.tank5.world_logic.DirectionVector;
-import com.tumble.tank5.world_logic.DirectionVector.Direction;
 import com.tumble.tank5.world_logic.Game;
 import com.tumble.tank5.world_logic.GameWorld;
-import com.tumble.tank5.world_logic.Position;
 
 /**
  * The core class of any mobile object in the game world. An entity is not a
@@ -36,16 +35,6 @@ public abstract class Entity extends GameObject {
 
 	protected Position startPos;
 	protected DirectionVector plannedMove = new DirectionVector(0, 0, 0);
-	
-	public enum Action {
-		FIRE,
-		SWITCH_WEAPON,
-		RELOAD,
-		NONE
-	}
-	
-	protected Action plannedAction;
-	protected Position[] firingPositions;
 	
 	protected boolean shouldRemove;
 
@@ -81,7 +70,7 @@ public abstract class Entity extends GameObject {
 	 *                   <code>Entity</code>) with the <code>IDManager</code> under
 	 *                   this <code>Game</code>.
 	 */
-	protected Entity(int entityID, Game game, float radius, Weapon ... weapons) {
+	public Entity(int entityID, Game game, float radius, Weapon ... weapons) {
 		if (game == null) {
 			throw new GameError("Can't initialise an Entity with a null Game!");
 		}
@@ -98,6 +87,11 @@ public abstract class Entity extends GameObject {
 		weaponIndex = weapons.length > 0 ? 0 : -1;
 		
 		shouldRemove = false;
+	}
+	
+	final void setPosition(Position newPosition) {
+		// Package-private.
+		if (newPosition != null) position = newPosition;
 	}
 	
 	public abstract void spawn(Position pos);
@@ -169,7 +163,17 @@ public abstract class Entity extends GameObject {
 	 * @return <code>true</code> if the attack was successfully planned, or
 	 *         <code>false</code> if it was invalid in some way.
 	 */
-	public abstract boolean addAttack(Game g, Position... positions);
+	public final boolean canAttack(Game g, Position... positions) {
+		if (g == null || !g.getWorld().hasEntity(this) || positions.length < 2 || weaponIndex == -1
+				|| !weapons[weaponIndex].ableToFire(g.getRoundNumber()))
+			return false;
+		
+		for (int i = 1; i < positions.length; i++) {
+			if (!weapons[weaponIndex].isInRange(positions[0], positions[i])) return false;
+		}
+		
+		return true;
+	}
 
 	/**
 	 * Attempts to make a weapon-switch the planned action for this
@@ -179,12 +183,8 @@ public abstract class Entity extends GameObject {
 	 * @return <code>true</code> if the weapon-switching was successfully planned,
 	 *         or <code>false</code> if it was invalid in some way.
 	 */
-	public boolean addWeaponSwitch() {
-		if (weaponIndex != -1 && weapons.length != 0) {
-			plannedAction = Action.SWITCH_WEAPON;
-			return true;
-		}
-		return false;
+	public final boolean canSwitchWeapon() {
+		return weaponIndex != -1 && weapons.length != 0;
 	}
 
 	/**
@@ -196,12 +196,8 @@ public abstract class Entity extends GameObject {
 	 * @return <code>true</code> if the weapon-reload was successfully planned, or
 	 *         <code>false</code> if it was invalid in some way.
 	 */
-	public boolean addReload() {
-		if (weapons[weaponIndex].ableToReload()) {
-			plannedAction = Action.RELOAD;
-			return true;
-		}
-		return false;
+	public final boolean canReload() {
+		return weaponIndex != -1 && weapons[weaponIndex].ableToReload();
 	}
 	
 	/**

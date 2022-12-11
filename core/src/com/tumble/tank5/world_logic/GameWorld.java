@@ -1,5 +1,6 @@
 package com.tumble.tank5.world_logic;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,9 +15,12 @@ import com.tumble.tank5.tiles.StairCase;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Tile.TileType;
 import com.tumble.tank5.tiles.Wall;
+import com.tumble.tank5.util.DirectionVector;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.GameUtils;
 import com.tumble.tank5.util.Pair;
+import com.tumble.tank5.util.Position;
+import com.tumble.tank5.util.DirectionVector.Direction;
 
 /**
  * Stores and provides access to each <code>Entity</code> and <code>Tile</code>
@@ -54,8 +58,16 @@ public class GameWorld {
 		rubbleManager = new RubbleManager(this);
 	}
 	
+	Set<Entity> getEntities() {
+		return Collections.unmodifiableSet(entities);
+	}
+	
 	public RubbleManager getRubbleManager() {
 		return rubbleManager;
+	}
+	
+	public boolean isLoaded() {
+		return loaded;
 	}
 
 	/**
@@ -67,7 +79,7 @@ public class GameWorld {
 	 * @return <code>true</code> if the world was successfully loaded, otherwise
 	 *         <code>false</code>.
 	 */
-	public boolean loadFromFile(String fileName) {
+	boolean loadFromFile(String fileName) {
 		try {
 			loadWorld(Gdx.files.internal(fileName).readString());
 			return true;
@@ -85,7 +97,7 @@ public class GameWorld {
 	 * @return <code>true</code> if the world was successfully loaded, otherwise
 	 *         <code>false</code>.
 	 */
-	public boolean loadFromString(String map) {
+	boolean loadFromString(String map) {
 		try {
 			loadWorld(map);
 			return true;
@@ -258,11 +270,13 @@ public class GameWorld {
 		return toReturn;
 	}
 	
-	public boolean spawnEntity(Entity e, Position pos, Game g) {
-		if (g.getWorld() != this || outOfBounds(pos) || entityAt(pos) != null) return false;
-		
+	boolean spawnEntity(Entity e, Position pos, Game g) {
+		if (g.getWorld() != this || outOfBounds(pos) || entityAt(pos) != null
+				|| tiles[pos.getZ()][pos.getY()][pos.getX()].isObstruction(Direction.NONE.asVector()))
+			return false;
+
 		for (Entity existing : entities) {
-			if (existing.getID() == e.getID()) return false;
+			if (existing.getID() == e.getID() || existing.getPosition().sameTile(pos)) return false;
 		}
 		
 		e.spawn(pos);
@@ -271,10 +285,10 @@ public class GameWorld {
 		return true;
 	}
 	
-	public void setTile(Position position, Tile tile) {
+	void setTile(Position position, Tile tile) {
 		if (position == null || outOfBounds(position) || tile == null)
 			return;
-		
+
 		tiles[position.getZ()][position.getY()][position.getX()] = tile;
 	}
 	
@@ -288,12 +302,12 @@ public class GameWorld {
 	 *         <code>GameWorld</code>, or <code>false</code> if it wasn't.
 	 */
 	public boolean hasEntity(Entity e) {
-		return entities.contains(e);
+		return e != null && !e.isDead() && entities.contains(e);
 	}
 	
 	public Entity getEntity(int id) {
 		for (Entity e : entities) {
-			if (e.getID() == id) {
+			if (!e.isDead() && e.getID() == id) {
 				return e;
 			}
 		}
@@ -316,7 +330,7 @@ public class GameWorld {
 			return null;
 
 		for (Entity e : entities) {
-			if (position.sameTile(e.getPosition()))
+			if (!e.isDead() && position.sameTile(e.getPosition()))
 				return e;
 		}
 
@@ -358,6 +372,10 @@ public class GameWorld {
 			return null;
 
 		return tiles[(int) Math.floor(z / Tile.TILE_SIZE)][(int) Math.floor(y / Tile.TILE_SIZE)][(int) Math.floor(x / Tile.TILE_SIZE)];
+	}
+	
+	public void clearDeadEntities() {
+		entities.removeIf((Entity e) -> e.isDead());
 	}
 	
 	public Pair<Queue<GameObject>, Queue<Position>> getLineObstructions(Position from, Position to) {

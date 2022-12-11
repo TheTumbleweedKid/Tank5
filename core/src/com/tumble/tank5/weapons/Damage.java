@@ -5,7 +5,7 @@ import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.tiles.Tile.TileType;
 import com.tumble.tank5.util.GameError;
-import com.tumble.tank5.world_logic.Position;
+import com.tumble.tank5.util.Position;
 
 
 /**

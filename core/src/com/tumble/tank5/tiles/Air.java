@@ -1,6 +1,6 @@
 package com.tumble.tank5.tiles;
 
-import com.tumble.tank5.world_logic.DirectionVector;
+import com.tumble.tank5.util.DirectionVector;
 
 /**
  * Represents an empty <code>Tile</code> in the <code>GameWorld</code>. Air

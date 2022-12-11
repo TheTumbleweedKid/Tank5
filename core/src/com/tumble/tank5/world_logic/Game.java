@@ -1,15 +1,22 @@
 package com.tumble.tank5.world_logic;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Set;
 
 import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.entities.Player;
+import com.tumble.tank5.entities.Action;
+import com.tumble.tank5.entities.Action.ActionType;
 import com.tumble.tank5.events.Event;
-import com.tumble.tank5.game_object.Move;
+import com.tumble.tank5.events.MovementEvent;
+import com.tumble.tank5.events.TriggerPullEvent;
 import com.tumble.tank5.inputs.Input;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.IDManager;
+import com.tumble.tank5.util.Pair;
+import com.tumble.tank5.util.Position;
+import com.tumble.tank5.util.DirectionVector;
 
 /**
  * 
@@ -28,11 +35,23 @@ public class Game {
 	// already been registered under a gameID of 0 with the IDManager before it has
 	// been registered.
 	private boolean isRegistered = false;
+	
+	private GodEntity god;
 
-	private int minPlayers;
+	private int minPlayers, playerCount;
+	private int patienceWait;
 
-	private Set<Entity> entities;
 	private GameWorld world;
+	
+	public enum Phase {
+		ACCEPTANCE,
+		PATIENCE,
+		ENACTMENT,
+		PLAY_PAUSED
+	}
+	
+	private Phase phase;
+	private long patienceStart;
 
 	private long startTime;
 	private boolean started = false;
@@ -40,7 +59,8 @@ public class Game {
 	private Round round;
 	private int tickNumber;
 	
-	private Map<Entity, Move> moves;
+	private Map<Entity, DirectionVector> moves;
+	private Map<Entity, Action> actions;
 
 	private PriorityQueue<Event> events;
 
@@ -52,15 +72,23 @@ public class Game {
 	 * be thrown, since the new <code>Game</code> instance can't be registered yet,
 	 * and certainly isn't <code>null</code>!
 	 * 
-	 * @param isServer   - whether this is a server-side <code>Game</code> or not.
+	 * @param isServer     - whether this is a server-side <code>Game</code> or not.
 	 * 
-	 * @param minPlayers - the minimum number of <code>Player</code>s the
-	 *                   <code>Game</code> should wait for to join before allowing
-	 *                   it to be started. Must be > 0.
+	 * @param minPlayers   - the minimum number of <code>Player</code>s the
+	 *                     <code>Game</code> should wait for to join before allowing
+	 *                     it to be started. Must be > 0.
+	 * 
+	 * @param patienceWait - how long to wait between the {@link Phase#ACCEPTANCE}
+	 *                     and {@link Phase#ENACTMENT} phases in a round (for
+	 *                     <code>Input</code>s and <code>Event</code>s to arrive
+	 *                     over the network). May be any <code>int</code>; values <
+	 *                     0 have the same effect as a value of 0 (no waiting <i>at
+	 *                     all</i> - not even waiting for the next call of the
+	 *                     {@link Game#update() method}).
 	 * 
 	 * @throws GameError if <code>minPlayers</code> <= 0.
 	 */
-	public Game(boolean isServer, int minPlayers) {
+	public Game(boolean isServer, int minPlayers, int patienceWait) {
 		this.isServer = isServer;
 
 		if (minPlayers <= 0) {
@@ -68,10 +96,18 @@ public class Game {
 		}
 
 		this.minPlayers = minPlayers;
+		playerCount = 0;
 
 		IDManager.registerGame(this);
+		
+		god = new GodEntity(IDManager.nextID(this), this);
 
 		world = new GameWorld();
+		
+		phase = Phase.PLAY_PAUSED;
+		
+		moves = new HashMap<Entity, DirectionVector>();
+		actions = new HashMap<Entity, Action>();
 		
 		events = new PriorityQueue<Event>();
 	}
@@ -116,18 +152,32 @@ public class Game {
 	 * 
 	 * @see Round#Round(int, int, int, int) for full parameter T's & C's.
 	 * 
-	 * @return
+	 * @return <code>true</code> if the <code>Game</code> was successfully started,
+	 *         or <code>false</code> if it was already in progress, doesn't have
+	 *         enough <code>Player</code>s joined to start, or has been given
+	 *         invalid <code>Round</code> parameters.
 	 */
 	public boolean start(int baseRoundDuration, int amplitude, int startingPhase, int period) {
+		if (playerCount < minPlayers) return false;
+		
 		try {
 			round = new Round(baseRoundDuration, amplitude, startingPhase, period);
-			round.start();
+			round.start(this);
+			
+			phase = Phase.ACCEPTANCE;
+			
+			moves.clear();
+			actions.clear();
+			
+			events.clear();
+			
+			tickNumber = 0;
 
 			startTime = System.currentTimeMillis();
 			started = true;
 			return true;
 		} catch (GameError e) {
-			System.out.println(round);
+			System.out.println("Can't start Game with bad Round data: " + e.getMessage());
 			return false;
 		}
 	}
@@ -135,36 +185,120 @@ public class Game {
 	public boolean isStarted() {
 		return started;
 	}
+	
+	public long getStartTime() {
+		return started ? startTime : -1;
+	}
+	
+	public boolean loadMap(String string, boolean isFilePath) {
+		if (isFilePath) {
+			return world.loadFromFile(string);
+		}
+		
+		return world.loadFromString(string);
+	}
+	
+	public boolean addEntity(Entity entity, Position spawnAt) {
+		if (phase != Phase.PLAY_PAUSED) return false;
+		
+		if (world.spawnEntity(entity, spawnAt, this)) {
+			actions.put(entity, new Action(ActionType.NONE));
+			
+			if (entity instanceof Player) playerCount += 1;
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean smiteEntity(Entity entity) {
+		if (entity == null || !world.hasEntity(entity)) return false;
+		
+		if (entity instanceof Player) playerCount--;
+		
+		return entity.damage(5 * entity.getHealth(), god); // always true.
+	}
 
 	public boolean addInput(Input i) {
 		if (i == null)
 			return false;
 
-		if (!started) {
+		if (!started || round.shouldAccept(i)) {
 			// accept special inputs (add player, player-quit, NPC-spawn, etc.).
 			return false;
 		}
 
-		return round.shouldAccept(i) && i.apply(this);
-	}
-
-	public Map<Entity, Move> getMoves() {
-		return moves;
+		Pair<Entity, Object> pair = i.apply(this);
+		
+		if (pair == null) return false;
+		
+		if (pair.second() instanceof DirectionVector) {
+			moves.put(pair.first(), (DirectionVector) pair.second());
+			return true;
+		}
+		
+		if (pair.second() instanceof Action) {
+			actions.put(pair.first(), (Action) pair.second());
+			return true;
+		}
+		
+		return false;
 	}
 
 	public void update() {
 		if (round.isFinished()) {
-			if (!events.isEmpty()) {
-				events.peek().apply(world, tickNumber, events);
+			if (phase == Phase.ACCEPTANCE) {
+				phase = Phase.PATIENCE; // Wait for extra Inputs and Events to come in.
 				
-				if (events.peek().isFinished()) events.poll();
+				patienceStart = round.getFinishTime();
 				
-				tickNumber++;
-			} else {
-				round = round.next();
-				round.start();
-				// Note: events has already been emptied!
-				tickNumber = 0;
+				world.clearDeadEntities();
+				
+				return;
+			}
+			
+			if (phase == Phase.PATIENCE) {
+				if (System.currentTimeMillis() - patienceStart < patienceWait) return;
+				
+				// Process first tick in this very call (won't wait for next update() call).
+				phase = Phase.ENACTMENT;
+				
+				for (MovementEvent mE : MovementEvent.createMovementSeries(moves)) events.offer(mE);
+				
+				for (Entity entity : world.getEntities()) {
+					// Rely on invariant that all dead Entities will be cleared up by next call of
+					// update().
+					switch (actions.get(entity).getType()) {
+					case FIRE:
+						events.offer(new TriggerPullEvent(entity, actions.get(entity).getPositions()));
+						break;
+					case SWITCH_WEAPON:
+						//events.offer(new SwitchWeaponEvent());
+						break;
+					case RELOAD:
+						//events.offer(new ReloadEvent());
+						break;
+					case NONE:
+						// Do nothing - only here to avoid incomplete-switch warnings!
+					}
+				}
+			}
+			
+			if (phase == Phase.ENACTMENT) {
+				if (!events.isEmpty()) {
+					while (!events.isEmpty() && events.peek().tickNumber <= tickNumber) {
+						events.peek().apply(world, tickNumber, events);
+						
+						if (events.peek().isFinished()) events.poll();
+					}
+					tickNumber++;
+				} else {
+					round = round.next();
+					round.start(this);
+					// Note: events has already been emptied!
+					tickNumber = 0;
+				}
 			}
 		}
 	}
@@ -177,6 +311,26 @@ public class Game {
 	public GameWorld getWorld() {
 		// Is there a better way of doing this?
 		return world;
+	}
+
+	public DirectionVector getMove(Entity e) {
+		return moves.get(e);
+	}
+	
+	public Action getAction(Entity e) {
+		return actions.get(e);
+	}
+	
+	public int getRoundNumber() {
+		if (!started || round == null) return -1;
+		
+		return round.roundNumber;
+	}
+	
+	boolean isCurrentRound(Round r) {
+		if (round == null) return r == null;
+		
+		return round.equals(r);
 	}
 
 	@Override

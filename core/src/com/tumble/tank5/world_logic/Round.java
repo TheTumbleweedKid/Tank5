@@ -104,18 +104,23 @@ public class Round {
 	 * time to be passed to clients, so their <code>Round</code>s can be
 	 * synchronised (via {@link Round#start(long)}).
 	 * 
-	 * @return the time at which the Round started, or -1 if it was already in
-	 *         progress.
+	 * @param game - the <code>Game</code> that this <code>Round</code> is running
+	 *             under. Must be a (the) non-<code>null</code> server-side
+	 *             <code>Game</code>.
+	 * 
+	 * @return the time at which the <code>Round</code> started, or -1 if it was
+	 *         already in progress (or the given <code>Game</code> was
+	 *         <code>null</code>, not the owner of this <code>Round</code>, or not
+	 *         server-side).
 	 */
-	public long start() {
-		if (!started) {
-			startTime = System.currentTimeMillis();
-			started = true;
-			
-			return startTime;
-		}
+	public long start(Game game) {
+		if (started || game == null || !game.isServer || !game.isCurrentRound(this))
+			return -1;
 		
-		return -1;
+		startTime = System.currentTimeMillis();
+		started = true;
+		
+		return startTime;
 	}
 	
 	/**
@@ -124,14 +129,25 @@ public class Round {
 	 * times are synchronised.
 	 * 
 	 * @param startTime - the time the server-side <code>Round</code> started.
+	 * 
+	 * @param game      - the <code>Game</code> that this <code>Round</code> is
+	 *                  running under. Must be a (the) non-<code>null</code>
+	 *                  client-side <code>Game</code>.
+	 * 
+	 * @return <code>true</code> if the <code>Round</code> was successfully started,
+	 *         or <code>false</code> if it was already in progress (or the given
+	 *         <code>Game</code> was <code>null</code>, not the owner of this
+	 *         <code>Round</code>, or not client-side).
 	 */
-	public void start(long startTime) {
-		if (!started && startTime != -1) {
-			this.startTime = startTime;
-			started = true;
-		}
+	public boolean start(long startTime, Game game) {
+		if (started || startTime == -1 || game == null || game.isServer || !game.isCurrentRound(this))
+			return false;
+
+		this.startTime = startTime;
+		started = true;
+		return true;
 	}
-	
+
 	/**
 	 * Whether this <code>Round</code> has started accepting <code>Input</code>s
 	 * yet.
@@ -153,6 +169,10 @@ public class Round {
 	 */
 	public boolean isFinished() {
 		return started && System.currentTimeMillis() - startTime >= duration;
+	}
+	
+	public long getFinishTime() {
+		return isFinished() ? startTime + duration * 1000l: -1;
 	}
 	
 	/**

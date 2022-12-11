@@ -1,8 +1,8 @@
 package com.tumble.tank5.inputs;
 
 import com.tumble.tank5.entities.Entity;
-import com.tumble.tank5.game_object.Move;
-import com.tumble.tank5.world_logic.DirectionVector;
+import com.tumble.tank5.util.DirectionVector;
+import com.tumble.tank5.util.Pair;
 import com.tumble.tank5.world_logic.Game;
 
 /**
@@ -24,24 +24,13 @@ public class EntityMove extends Input {
 	}
 
 	@Override
-	public boolean apply(Game g) {
-		if (entity == null || entity.isDead()) return false;
+	public Pair<Entity, Object> apply(Game g) {
+		if (entity == null || entity.isDead() || g == null || !g.getWorld().hasEntity(entity)) return null;
 
-		DirectionVector toMove = moveIn.combine(
-				g.getMoves().get(entity).direction.asVector());
+		DirectionVector toMove = moveIn.combine(g.getMove(entity));
 		
-		if (toMove.equals(moveIn)) return false;
+		if (toMove.equals(moveIn) || !entity.canMove(toMove.asEnum(), g.getWorld())) return null;
 		
-		if (!entity.canMove(toMove.asEnum(), g.getWorld())) return false;
-		
-		g.getMoves().put(
-				entity,
-				new Move(
-						toMove.asEnum(),
-						entity.getPosition().tileCentre(),
-						entity.getPosition().tileCentre().move(toMove)
-				)
-		);
-		return true;
+		return new Pair<Entity, Object>(entity, toMove);
 	}
 }

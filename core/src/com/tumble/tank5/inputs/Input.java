@@ -1,5 +1,7 @@
 package com.tumble.tank5.inputs;
 
+import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.util.Pair;
 import com.tumble.tank5.world_logic.Game;
 import com.tumble.tank5.world_logic.Round;
 
@@ -38,5 +40,5 @@ public abstract class Input {
 	 * @return <code>true</code> if the <code>Input</code> was valid (applied
 	 *         successfully), or <code>false</code> if it wasn't.
 	 */
-	public abstract boolean apply(Game g);
+	public abstract Pair<Entity, Object> apply(Game g);
 }

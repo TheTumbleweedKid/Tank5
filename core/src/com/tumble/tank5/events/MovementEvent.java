@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.Queue;
 
 import com.tumble.tank5.entities.Entity;
-import com.tumble.tank5.game_object.Move;
-import com.tumble.tank5.world_logic.DirectionVector.Direction;
+import com.tumble.tank5.entities.Move;
+import com.tumble.tank5.util.Position;
+import com.tumble.tank5.util.DirectionVector;
 import com.tumble.tank5.world_logic.GameWorld;
-import com.tumble.tank5.world_logic.Position;
 
 public class MovementEvent extends Event {
 	public static final int MOVEMENT_TICKS = 10;
@@ -75,7 +75,7 @@ public class MovementEvent extends Event {
 		finished = true;
 	}
 
-	public static MovementEvent[] createMovementSeries(Map<Entity, Direction> directions) {
+	public static MovementEvent[] createMovementSeries(Map<Entity, DirectionVector> directions) {
 		MovementEvent[] steps = new MovementEvent[MovementEvent.MOVEMENT_TICKS];
 
 		// Make our own map of moves (rather than being given them directly) to maintain
@@ -84,7 +84,12 @@ public class MovementEvent extends Event {
 
 		for (Entity key : directions.keySet()) {
 			Position currentPos = key.getPosition().tileCentre();
-			moves.put(key, new Move(directions.get(key), currentPos, currentPos.move(directions.get(key))));
+			moves.put(
+					key,
+					new Move(
+							directions.get(key).asEnum(),
+							currentPos,
+							currentPos.move(directions.get(key))));
 		}
 
 		steps[0] = new MovementEvent(0, moves, MovementType.START);

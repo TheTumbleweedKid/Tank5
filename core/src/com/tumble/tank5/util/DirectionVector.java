@@ -1,4 +1,4 @@
-package com.tumble.tank5.world_logic;
+package com.tumble.tank5.util;
 
 import com.tumble.tank5.tiles.Tile;
 

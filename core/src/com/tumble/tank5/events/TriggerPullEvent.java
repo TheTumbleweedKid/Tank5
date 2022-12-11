@@ -3,8 +3,8 @@ package com.tumble.tank5.events;
 import java.util.Queue;
 
 import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.util.Position;
 import com.tumble.tank5.world_logic.GameWorld;
-import com.tumble.tank5.world_logic.Position;
 
 public class TriggerPullEvent extends Event {
 	private Entity attacker;

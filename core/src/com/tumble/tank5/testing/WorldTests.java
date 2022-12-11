@@ -5,13 +5,15 @@ import org.junit.jupiter.api.Test;
 import com.tumble.tank5.entities.Player;
 import com.tumble.tank5.tiles.Tile;
 import com.tumble.tank5.util.IDManager;
+import com.tumble.tank5.util.Position;
 import com.tumble.tank5.world_logic.Game;
 import com.tumble.tank5.world_logic.GameWorld;
-import com.tumble.tank5.world_logic.Position;
 
 
 /**
- * Tests to ensure that the <code>GameWorld</code> loads and behaves properly.
+ * Tests to ensure that the <code>GameWorld</code> loads and behaves properly
+ * (including access methods for the <code>GameWorld</code> in
+ * <code>Game</code>).
  * 
  * @author Tumbl
  *
@@ -19,48 +21,59 @@ import com.tumble.tank5.world_logic.Position;
 public class WorldTests {
 
 	/**
-	 * Makes sure unloaded (and incorrectly-loaded) maps return an "unloaded" from their
-	 * {@link GameWorld#toString()}, rather than <code>null</code> or throw an
-	 * exception.
+	 * Makes sure unloaded (and incorrectly-loaded) maps return an "unloaded" from
+	 * their {@link GameWorld#toString()}, rather than <code>null</code> or throw an
+	 * exception. Also tests {@link Game#loadMap(String, boolean)} (<i>only</i> for
+	 * map-<code>String</code>s).
 	 */
 	@Test
 	public void test_01() {
-		GameWorld gW = new GameWorld();
+		Game g = new Game(true, 1, 0);
+		
+		GameWorld gW = g.getWorld();
 
 		// Nothing loaded yet.
 		assert compare("unloaded", gW.toString());
 
 		// Null map string.
-		gW.loadFromString(null);
+		assert !g.loadMap(null, false);
+		
 		assert compare("unloaded", gW.toString());
 		
 		// Empty map string.
-		gW.loadFromString("");
+		assert !g.loadMap("", false);
+		
 		assert compare("unloaded", gW.toString());
 
 		// Invalid map string (inconsistent level x-dimensions).
-		gW.loadFromString(
+		assert !g.loadMap(
 				"WWW\n" +
 				"WWW" +
 				"~" +
 				"WW\n"+
-				"WWW");
+				"WWW",
+				false);
+		
 		assert compare("unloaded", gW.toString());
+		
 		// Invalid map string (inconsistent level y-dimensions).
-				gW.loadFromString(
-						"WWW\n" +
-						"WWW" +
-						"~" +
-						"WWW\n"+
-						"WWW\n" +
-						"WWW");
-				assert compare("unloaded", gW.toString());
+		assert !g.loadMap(
+				"WWW\n" +
+				"WWW" +
+				"~" +
+				"WWW\n"+
+				"WWW\n" +
+				"WWW",
+				false);
+		
+		assert compare("unloaded", gW.toString());
 	}
 
 	/**
 	 * Makes sure a vertically- and horizontally-asymmetrical multi-layered map is
 	 * loaded, stored and printed (converted to a <code>String</code>
-	 * representation) correctly.
+	 * representation) correctly. Also tests {@link Game#loadMap(String, boolean)} (<i>only</i> for
+	 * map-<code>String</code>s).
 	 */
 	@Test
 	public void test_02() {
@@ -76,10 +89,12 @@ public class WorldTests {
 				"    \n" +
 				"  W \n" +
 				"# W ";
+
+		Game g = new Game(true, 1, 0);
 		
-		GameWorld gW = new GameWorld();
+		GameWorld gW = g.getWorld();
 		
-		gW.loadFromString(mapString);
+		assert g.loadMap(mapString, false);
 		
 		assert compare(mapString, gW.toString());
 	}
@@ -97,10 +112,12 @@ public class WorldTests {
 				"    \n" +
 				"    \n" +
 				"    ";
+
+		Game g = new Game(true, 1, 0);
 		
-		GameWorld gW = new GameWorld();
-		
-		gW.loadFromString(mapString);
+		GameWorld gW = g.getWorld();
+
+		g.loadMap(mapString, false);
 		
 		assert !gW.outOfBounds(
 				 3 * Tile.TILE_SIZE,
@@ -151,10 +168,12 @@ public class WorldTests {
 				"     \n" +
 				"     \n" +
 				"  #  ";
+
+		Game g = new Game(true, 1, 0);
 		
-		GameWorld gW = new GameWorld();
-		
-		gW.loadFromString(mapString);
+		GameWorld gW = g.getWorld();
+
+		g.loadMap(mapString, false);
 		
 		int repeats = 20;
 		
@@ -204,44 +223,41 @@ public class WorldTests {
 						0 * Tile.TILE_SIZE)
 		};
 		
-		Game g = new Game(true, 1);
+		Game g = new Game(true, 1, 0);
 		GameWorld gW = g.getWorld();
-		
-		gW.loadFromString(mapString);
+
+		g.loadMap(mapString, false);
 		
 		// No Entity should be found (as none have been spawned yet).
 		assert compare("", gW.entityAt(spawnLocations[0]));
 		
 		// Spawn empty-name Player at the first location.
-		assert gW.spawnEntity(
+		assert g.addEntity(
 				new Player(
 						g,
 						IDManager.nextID(g),
 						""),
-				spawnLocations[0],
-				g);
+				spawnLocations[0]);
 		assert compare("P", gW.entityAt(spawnLocations[0]));
 		
 		// Spawn named Player at the second location.
-		assert gW.spawnEntity(
+		assert g.addEntity(
 				new Player(
 						g,
 						IDManager.nextID(g),
 						"A"),
-				spawnLocations[1],
-				g);
+				spawnLocations[1]);
 		assert compare("A", gW.entityAt(spawnLocations[1]));
 		
 		// Fail to spawn named Player in a populated location,
 		// i.e., "A" remains at the second location, while "B"
 		// is not spawned.
-		assert !gW.spawnEntity(
+		assert !g.addEntity(
 				new Player(
 						g,
 						IDManager.nextID(g),
 						"B"),
-				spawnLocations[1],
-				g);
+				spawnLocations[1]);
 		assert compare("A", gW.entityAt(spawnLocations[1]));
 	}
 

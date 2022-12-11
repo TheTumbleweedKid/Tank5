@@ -1,8 +1,9 @@
 package com.tumble.tank5.inputs;
 
+import com.tumble.tank5.entities.Action;
 import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.util.Pair;
 import com.tumble.tank5.world_logic.Game;
-import com.tumble.tank5.world_logic.Position;
 
 /**
  * Represents a suggested action input (either shooting, switching weapon or
@@ -14,33 +15,35 @@ import com.tumble.tank5.world_logic.Position;
 public class EntityAction extends Input {
 	private Entity entity;
 	private Action action;
-	private Position[] positions;
 	
-	public enum Action {
-		FIRE,
-		SWITCH_WEAPON,
-		RELOAD
-	}
-	
-	public EntityAction(long time, Entity entity, Action action, Position... positions) {
+	public EntityAction(long time, Entity entity, Action action) {
 		this.time = time;
 		
 		this.entity = entity;
-		this.action = action;
-		this.positions = positions;
+		this.action = action.copy();
 	}
 	
 	@Override
-	public boolean apply(Game g) {
-		switch (action) {
+	public Pair<Entity, Object> apply(Game g) {
+		if (entity == null || entity.isDead() || g == null || !g.getWorld().hasEntity(entity))
+			return null;
+
+		boolean valid = false;
+		switch (action.getType()) {
 		case FIRE:
-			return entity.addAttack(g, positions);
+			valid = entity.canAttack(g, action.getPositions());
+			break;
 		case SWITCH_WEAPON:
-			return entity.addWeaponSwitch();
+			valid = entity.canSwitchWeapon();
+			break;
 		case RELOAD:
-			return entity.addReload();
-		default:
-			return false;
+			valid = entity.canReload();
+			break;
+		case NONE:
+			// No effect. The default Action is of ActionType.NONE, so there is no point
+			// changing it.
 		}
+
+		return valid ? new Pair<Entity, Object>(entity, action.copy()) : null;
 	}
 }

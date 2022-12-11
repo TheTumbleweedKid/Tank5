@@ -1,10 +1,10 @@
 package com.tumble.tank5.game_object;
 
 import com.tumble.tank5.entities.Entity;
-import com.tumble.tank5.world_logic.Position;
+import com.tumble.tank5.util.Position;
 
 public abstract class GameObject {
-	private Position position;
+	protected Position position;
 	
 	private int health = 0;
 	private Entity attacker;
@@ -25,18 +25,26 @@ public abstract class GameObject {
 		attacker = null;
 	}
 	
+	/**
+	 * Permanently subtracts a given amount of damage from the
+	 * <code>GameObject</code>'s health pool.
+	 * 
+	 * @param damage   - the amount of damage to take. Values <= 0 will have no
+	 *                 effect.
+	 * 
+	 * @param attacker - the <code>Entity</code> who caused the damage to be
+	 *                 inflicted (directly or indirectly).
+	 * 
+	 * @return <code>true</code> if this <code>GameObject</code> now has 0 health or
+	 *         less, otherwise <code>false</code>.
+	 */
 	public final boolean damage(int damage, Entity attacker) {
-		if (damage <= 0) return false;
-		
-		health -= damage;
-		this.attacker = attacker;
+		if (damage <= 0) {
+			health -= damage;
+			this.attacker = attacker;
+		}
 		
 		return health <= 0;
-	}
-	
-	final void setPosition(Position newPosition) {
-		// Package-private.
-		if (newPosition != null) position = newPosition;
 	}
 	
 	public final Position getPosition() {
