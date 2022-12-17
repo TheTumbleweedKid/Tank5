@@ -1,4 +1,4 @@
-package com.tumble.tank5.entities;
+package com.tumble.tank5.game_object.entities;
 
 import com.tumble.tank5.util.Position;
 

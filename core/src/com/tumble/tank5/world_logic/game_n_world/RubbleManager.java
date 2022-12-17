@@ -1,16 +1,16 @@
-package com.tumble.tank5.world_logic;
+package com.tumble.tank5.world_logic.game_n_world;
 
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 
-import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.events.DamageEvent;
 import com.tumble.tank5.events.Event;
-import com.tumble.tank5.tiles.Air;
-import com.tumble.tank5.tiles.Rubble;
-import com.tumble.tank5.tiles.Tile;
-import com.tumble.tank5.tiles.Tile.TileType;
+import com.tumble.tank5.game_object.entities.Entity;
+import com.tumble.tank5.game_object.tiles.Air;
+import com.tumble.tank5.game_object.tiles.Rubble;
+import com.tumble.tank5.game_object.tiles.Tile;
+import com.tumble.tank5.game_object.tiles.Tile.TileType;
 import com.tumble.tank5.util.DirectionVector;
 import com.tumble.tank5.util.Position;
 import com.tumble.tank5.weapons.Damage;
@@ -27,7 +27,7 @@ public class RubbleManager {
 	DirectionVector down = new DirectionVector(0, 0, -1);
 	
 	public void makeRubble(Tile t, Entity attacker,  Queue<Event> eventStream) {
-		if (t.getType() == TileType.AIR) return;
+		if (!gW.isLoaded() || t.getType() == TileType.AIR) return;
 		
 		Position pos = t.getPosition();
 		Position newPos = t.getPosition();
@@ -65,7 +65,7 @@ public class RubbleManager {
 		
 	}
 	
-	public void clear() {
+	void clear() {
 		rubble.clear();
 	}
 }

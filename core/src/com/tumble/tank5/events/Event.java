@@ -2,7 +2,7 @@ package com.tumble.tank5.events;
 
 import java.util.Queue;
 
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 /**
  * A single event that happens in a <code>Round</code>.
@@ -22,11 +22,13 @@ public abstract class Event implements Comparable<Event> {
 		return tickNumber - other.tickNumber;
 	}
 	
-	public abstract boolean applicable(GameWorld gW, int currentTick);
+	public abstract boolean applicable(GameWorld gW, int currentTick, int roundNumber);
 	
 	public abstract void apply(GameWorld gW, int currentTick, Queue<Event> eventStream);
 	
 	public final boolean isFinished() {
 		return finished;
 	}
+	
+	public abstract String toString();
 }

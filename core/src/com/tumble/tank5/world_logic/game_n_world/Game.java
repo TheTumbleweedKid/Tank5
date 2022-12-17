@@ -1,21 +1,24 @@
-package com.tumble.tank5.world_logic;
+package com.tumble.tank5.world_logic.game_n_world;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-import com.tumble.tank5.entities.Entity;
-import com.tumble.tank5.entities.Player;
-import com.tumble.tank5.entities.Action;
-import com.tumble.tank5.entities.Action.ActionType;
 import com.tumble.tank5.events.Event;
 import com.tumble.tank5.events.MovementEvent;
 import com.tumble.tank5.events.TriggerPullEvent;
+import com.tumble.tank5.game_object.entities.Action;
+import com.tumble.tank5.game_object.entities.Entity;
+import com.tumble.tank5.game_object.entities.Player;
+import com.tumble.tank5.game_object.entities.Action.ActionType;
 import com.tumble.tank5.inputs.Input;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.IDManager;
 import com.tumble.tank5.util.Pair;
 import com.tumble.tank5.util.Position;
+import com.tumble.tank5.world_logic.GodEntity;
+import com.tumble.tank5.world_logic.MapData;
+import com.tumble.tank5.world_logic.Round;
 import com.tumble.tank5.util.DirectionVector;
 
 /**
@@ -190,18 +193,14 @@ public class Game {
 		return started ? startTime : -1;
 	}
 	
-	public boolean loadMap(String string, boolean isFilePath) {
-		if (isFilePath) {
-			return world.loadFromFile(string);
-		}
-		
-		return world.loadFromString(string);
+	public boolean loadMap(MapData mD) {
+		return world.loadWorld(mD);
 	}
 	
 	public boolean addEntity(Entity entity, Position spawnAt) {
 		if (phase != Phase.PLAY_PAUSED) return false;
 		
-		if (world.spawnEntity(entity, spawnAt, this)) {
+		if (world.spawnEntity(entity, spawnAt)) {
 			actions.put(entity, new Action(ActionType.NONE));
 			
 			if (entity instanceof Player) playerCount += 1;
@@ -327,7 +326,7 @@ public class Game {
 		return round.roundNumber;
 	}
 	
-	boolean isCurrentRound(Round r) {
+	public boolean isCurrentRound(Round r) {
 		if (round == null) return r == null;
 		
 		return round.equals(r);

@@ -4,19 +4,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import com.badlogic.gdx.utils.Queue;
-import com.tumble.tank5.entities.Entity;
-import com.tumble.tank5.entities.Player;
 import com.tumble.tank5.events.MovementEvent;
 import com.tumble.tank5.game_object.GameObject;
-import com.tumble.tank5.tiles.Tile;
-import com.tumble.tank5.tiles.Wall;
+import com.tumble.tank5.game_object.entities.Entity;
+import com.tumble.tank5.game_object.entities.Player;
+import com.tumble.tank5.game_object.tiles.Tile;
+import com.tumble.tank5.game_object.tiles.Wall;
 import com.tumble.tank5.util.IDManager;
 import com.tumble.tank5.util.Position;
 import com.tumble.tank5.weapons.Damage;
 import com.tumble.tank5.weapons.DevWeapon;
 import com.tumble.tank5.weapons.Weapon;
-import com.tumble.tank5.world_logic.Game;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.MapData;
+import com.tumble.tank5.world_logic.game_n_world.Game;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class WeaponTests2 {
@@ -59,12 +60,12 @@ public class WeaponTests2 {
 	@Test
 	public void test_01() {
 		g.loadMap(
-				"  W    \n" +
-				"  W    \n" +
-				"       \n" +
-				"     WW\n" +
-				"  W WW ",
-				false);
+				new MapData(
+						"  W    \n" +
+						"  W    \n" +
+						"       \n" +
+						"     WW\n" +
+						"  W WW "));
 		
 		shooterPos = new Position(
 				2.5 * Tile.TILE_SIZE,
@@ -170,24 +171,24 @@ public class WeaponTests2 {
 		gW = g.getWorld();
 		
 		g.loadMap(
-				"  W    \n" +
-				"  W    \n" +
-				"       \n" +
-				"     <W\n" +
-				"  # W  " +
-				"~" +
-				"  W    \n" +
-				"       \n" +
-				"       \n" +
-				"     <W\n" +
-				"  # W  " +
-				"~" +
-				"  W    \n" +
-				"       \n" +
-				"       \n" +
-				"     <W\n" +
-				"  # W  ",
-				false);
+				new MapData(
+						"  W    \n" +
+						"  W    \n" +
+						"       \n" +
+						"     <W\n" +
+						"  # W  " +
+						"~" +
+						"  W    \n" +
+						"       \n" +
+						"       \n" +
+						"     <W\n" +
+						"  # W  " +
+						"~" +
+						"  W    \n" +
+						"       \n" +
+						"       \n" +
+						"     <W\n" +
+						"  # W  "));
 		
 		shooterPos = new Position(
 				2.5 * Tile.TILE_SIZE,
@@ -225,12 +226,12 @@ public class WeaponTests2 {
 		gW = g.getWorld();
 		
 		g.loadMap(
-				"  W    \n" +
-				"  W    \n" +
-				"       \n" +
-				"     WW\n" +
-				"  W WW ",
-				false);
+				new MapData(
+						"  W    \n" +
+						"  W    \n" +
+						"       \n" +
+						"     WW\n" +
+						"  W WW "));
 		
 		shooterPos = new Position(
 				2.5 * Tile.TILE_SIZE,

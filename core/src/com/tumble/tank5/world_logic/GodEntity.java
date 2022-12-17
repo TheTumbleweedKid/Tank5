@@ -2,8 +2,9 @@ package com.tumble.tank5.world_logic;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.util.Position;
+import com.tumble.tank5.world_logic.game_n_world.Game;
 
 public class GodEntity extends Entity {
 	

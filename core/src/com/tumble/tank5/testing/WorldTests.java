@@ -1,13 +1,15 @@
 package com.tumble.tank5.testing;
 
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
-import com.tumble.tank5.entities.Player;
-import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.game_object.entities.Player;
+import com.tumble.tank5.game_object.tiles.Tile;
 import com.tumble.tank5.util.IDManager;
 import com.tumble.tank5.util.Position;
-import com.tumble.tank5.world_logic.Game;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.MapData;
+import com.tumble.tank5.world_logic.game_n_world.Game;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 
 /**
@@ -23,7 +25,7 @@ public class WorldTests {
 	/**
 	 * Makes sure unloaded (and incorrectly-loaded) maps return an "unloaded" from
 	 * their {@link GameWorld#toString()}, rather than <code>null</code> or throw an
-	 * exception. Also tests {@link Game#loadMap(String, boolean)} (<i>only</i> for
+	 * exception. Also tests {@link Game#loadMap(MapData)} (<i>only</i> for
 	 * map-<code>String</code>s).
 	 */
 	@Test
@@ -36,35 +38,35 @@ public class WorldTests {
 		assert compare("unloaded", gW.toString());
 
 		// Null map string.
-		assert !g.loadMap(null, false);
+		assert !g.loadMap(null);
 		
 		assert compare("unloaded", gW.toString());
 		
 		// Empty map string.
-		assert !g.loadMap("", false);
+		assert !g.loadMap(new MapData(""));
 		
 		assert compare("unloaded", gW.toString());
 
 		// Invalid map string (inconsistent level x-dimensions).
 		assert !g.loadMap(
-				"WWW\n" +
-				"WWW" +
-				"~" +
-				"WW\n"+
-				"WWW",
-				false);
+				new MapData(
+						"WWW\n" +
+						"WWW" +
+						"~" +
+						"WW\n"+
+						"WWW"));
 		
 		assert compare("unloaded", gW.toString());
 		
 		// Invalid map string (inconsistent level y-dimensions).
 		assert !g.loadMap(
-				"WWW\n" +
-				"WWW" +
-				"~" +
-				"WWW\n"+
-				"WWW\n" +
-				"WWW",
-				false);
+				new MapData(
+						"WWW\n" +
+						"WWW" +
+						"~" +
+						"WWW\n"+
+						"WWW\n" +
+						"WWW"));
 		
 		assert compare("unloaded", gW.toString());
 	}
@@ -94,7 +96,7 @@ public class WorldTests {
 		
 		GameWorld gW = g.getWorld();
 		
-		assert g.loadMap(mapString, false);
+		assert g.loadMap(new MapData(mapString));
 		
 		assert compare(mapString, gW.toString());
 	}
@@ -117,7 +119,7 @@ public class WorldTests {
 		
 		GameWorld gW = g.getWorld();
 
-		g.loadMap(mapString, false);
+		g.loadMap(new MapData(mapString));
 		
 		assert !gW.outOfBounds(
 				 3 * Tile.TILE_SIZE,
@@ -158,7 +160,7 @@ public class WorldTests {
 	 * inside grid-cubes in the world and checking they still correspond to the same
 	 * (unique) <code>Tile</code>.
 	 */
-	@Test
+	@RepeatedTest(20)
 	public void test_04() {
 		String mapString =
 				"   v \n" +
@@ -173,30 +175,26 @@ public class WorldTests {
 		
 		GameWorld gW = g.getWorld();
 
-		g.loadMap(mapString, false);
+		g.loadMap(new MapData(mapString));
 		
-		int repeats = 20;
-		
-		for (int i = 0; i < repeats; i++) {
-			assert compare(
-					"#",
-					gW.tileAt(
-							Math.random() * Tile.TILE_SIZE,
-							Math.random() * Tile.TILE_SIZE,
-							Math.random() * Tile.TILE_SIZE).toString());
-			assert compare(
-					"v",
-					gW.tileAt(
-							(3 + Math.random()) * Tile.TILE_SIZE,
-							(2 + Math.random()) * Tile.TILE_SIZE,
-							Math.random() * Tile.TILE_SIZE).toString());
-			assert compare(
-					"#",
-					gW.tileAt(
-							(2 + Math.random()) * Tile.TILE_SIZE,
-							Math.random() * Tile.TILE_SIZE,
-							(1 + Math.random()) * Tile.TILE_SIZE).toString());
-		}
+		assert compare(
+				"#",
+				gW.tileAt(
+						Math.random() * Tile.TILE_SIZE,
+						Math.random() * Tile.TILE_SIZE,
+						Math.random() * Tile.TILE_SIZE).toString());
+		assert compare(
+				"v",
+				gW.tileAt(
+						(3 + Math.random()) * Tile.TILE_SIZE,
+						(2 + Math.random()) * Tile.TILE_SIZE,
+						Math.random() * Tile.TILE_SIZE).toString());
+		assert compare(
+				"#",
+				gW.tileAt(
+						(2 + Math.random()) * Tile.TILE_SIZE,
+						Math.random() * Tile.TILE_SIZE,
+						(1 + Math.random()) * Tile.TILE_SIZE).toString());
 	}
 	
 	/**
@@ -226,7 +224,7 @@ public class WorldTests {
 		Game g = new Game(true, 1, 0);
 		GameWorld gW = g.getWorld();
 
-		g.loadMap(mapString, false);
+		g.loadMap(new MapData(mapString));
 		
 		// No Entity should be found (as none have been spawned yet).
 		assert compare("", gW.entityAt(spawnLocations[0]));

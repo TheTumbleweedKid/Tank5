@@ -1,15 +1,16 @@
-package com.tumble.tank5.tiles;
+package com.tumble.tank5.game_object.tiles;
 
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 
-import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.events.DeathEvent;
 import com.tumble.tank5.events.Event;
 import com.tumble.tank5.game_object.GameObject;
+import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.util.DirectionVector;
 import com.tumble.tank5.util.Position;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 /**
  * Controls/stores the properties of a tile on the game board.
@@ -21,6 +22,8 @@ public abstract class Tile extends GameObject {
 	public static final double TILE_SIZE = 10.0;
 	
 	protected static final DirectionVector NO_MOVEMENT = DirectionVector.Direction.NONE.asVector();
+	
+	private boolean hasDied = false;
 	
 	private Set<Tile> supports = new HashSet<Tile>();
 	private Set<Tile> supportedBy = new HashSet<Tile>();
@@ -61,12 +64,25 @@ public abstract class Tile extends GameObject {
 
 	public abstract boolean stopsFalling();
 
-	public boolean die(Entity attacker, GameWorld gW, Queue<Event> eventStream) {
-		if (type == TileType.RUBBLE || getHealth() <= 0) return false;
+	public boolean die(int atTick, Entity attacker, GameWorld gW, Queue<Event> eventStream) {
+		// Rubble and Air Tiles can't be killed.
+		if (type == TileType.RUBBLE || this == Air.AIR || hasDied) return false;
+		
+		damage(Math.max(1, getHealth()), attacker);
 		
 		for (Tile t : supports) {
-			t.removeSupport(this, attacker, gW, eventStream);
+			if (t.removeSupport(this, gW)) {
+				eventStream.offer(
+						new DeathEvent(
+								atTick,
+								t,
+								attacker));
+			}
 		}
+		
+		gW.getRubbleManager().makeRubble(this, getAttacker(), eventStream);
+		hasDied = true;
+		
 		return true;
 	}
 
@@ -103,45 +119,32 @@ public abstract class Tile extends GameObject {
 
 	/**
 	 * Removes a supporting <code>Tile</code> from this <code>Tile</code>'s set of
-	 * supports, passing on the attacking <code>Entity</code> who destroyed the
-	 * support, and destroying this Tile if it is no longer supported (in which
-	 * case, this method is called for all <code>Tile</code>s that were supported by
-	 * this <code>Tile</code>). If this is an <code>Air Tile</code> then this method
-	 * will have no effect.
+	 * supports. If this is an <code>Air</code> or <code>Rubble Tile</code> then
+	 * this method will have no effect.
 	 * 
-	 * @param t           - the supporting <code>Tile</code> to remove (that has
-	 *                    been destroyed).
+	 * @param t  - the supporting <code>Tile</code> to remove (that has been
+	 *           destroyed).
 	 * 
-	 * @param attacker    - the attacking <code>Entity</code> who caused the
-	 *                    destruction of this <code>Tile</code>. May be
-	 *                    <code>null</code> if this was a natural collapse of some
-	 *                    sort.
 	 * 
-	 * @param gW          - the <code>GameWorld</code> that both <code>Tile</code>s
-	 *                    are a part of (no action will be taken if either does not
-	 *                    exist in the given world).
+	 * @param gW - the <code>GameWorld</code> that both <code>Tile</code>s are a
+	 *           part of (no action will be taken if either does not exist in the
+	 *           given world).
 	 * 
-	 * @param eventStream - the stream of <code>Event</code>s to add the
-	 *                    <code>Tile</code>'s potential collapse (as well as those
-	 *                    of any <code>Tile</code>s this one supports) to.
 	 */
-	public void removeSupport(Tile t, Entity attacker, GameWorld gW, Queue<Event> eventStream) {
-		if (this == Air.AIR) return;
-		
-		if (supportedBy.remove(t) && gW.tileAt(getPosition()) == this) {
-			if (supportedBy.size() == 0 && type != TileType.RUBBLE) {
-				gW.getRubbleManager().makeRubble(this, attacker, eventStream);
-				
-				for (Tile supported : supports) {
-					supported.removeSupport(this, attacker, gW, eventStream);
-				}
-				
-			}
-		}
+	public boolean removeSupport(Tile t, GameWorld gW) {
+		return this != Air.AIR
+				&& supportedBy.remove(t)
+				&& gW.tileAt(getPosition()) == this
+				&& supportedBy.size() == 0
+				&& type != TileType.RUBBLE;
 	}
 
 	public TileType getType() {
 		return type;
+	}
+	
+	public boolean isDead() {
+		return hasDied;
 	}
 	
 	public abstract String toString();

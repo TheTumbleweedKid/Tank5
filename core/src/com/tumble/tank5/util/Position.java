@@ -1,6 +1,6 @@
 package com.tumble.tank5.util;
 
-import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.game_object.tiles.Tile;
 
 /**
  * Stores a location in the game world (could be off the board) in

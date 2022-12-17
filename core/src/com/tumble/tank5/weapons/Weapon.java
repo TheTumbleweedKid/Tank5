@@ -1,15 +1,14 @@
 package com.tumble.tank5.weapons;
 
 import com.badlogic.gdx.utils.Queue;
-
-import com.tumble.tank5.entities.Entity;
 import com.tumble.tank5.events.FiringEvent;
 import com.tumble.tank5.game_object.GameObject;
-import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.game_object.entities.Entity;
+import com.tumble.tank5.game_object.tiles.Tile;
 import com.tumble.tank5.util.GameUtils;
 import com.tumble.tank5.util.Pair;
 import com.tumble.tank5.util.Position;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 /**
  * Encompasses all weapons in the game - those wielded by NPCs and <code>Player</code>s alike.
@@ -159,18 +158,19 @@ public abstract class Weapon {
 	}
 	
 	/**
-	 * Should only be called by {@link FiringEvent#app
 	 * 
-	 * @param ownerId   - the ID number of the <code>Entity</code> who is firing the
-	 *                  weapon (i.e., its 'owner').
+	 * @param ownerId - the ID number of the <code>Entity</code> who is firing the
+	 *                weapon (i.e., its 'owner').
 	 * 
-	 * @param gW        - the <code>GameWorld</code> the owner is a part of.
+	 * @param gW      - the <code>GameWorld</code> the owner is a part of.
 	 * 
-	 * @param positions - any <code>Position</code>s that may be useful for
-	 *                  calculating damage. The number and order of these arguments
-	 *                  required may vary depending on the type of weapon.
+	 * @param from    - the <code>Position</code> the bullet should start at.
 	 * 
-	 * @return a map of all the victims to their damages.
+	 * @param to      - the <code>Position</code> the bullet should end at (if it
+	 *                doesn't end up hitting anything).
+	 * 
+	 * @return a list of all the <code>Damage</code>s that would be done if this
+	 *         <code>Weapon</code> fired from <code>from</code> to <code>to</code>.
 	 */
 	public Damage[] fire(int ownerId,
 			GameWorld gW,

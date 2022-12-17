@@ -2,6 +2,7 @@ package com.tumble.tank5.world_logic;
 
 import com.tumble.tank5.inputs.Input;
 import com.tumble.tank5.util.GameError;
+import com.tumble.tank5.world_logic.game_n_world.Game;
 
 /**
  * Represents a period of time in which input from the user should accepted by

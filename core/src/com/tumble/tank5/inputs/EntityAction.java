@@ -1,9 +1,9 @@
 package com.tumble.tank5.inputs;
 
-import com.tumble.tank5.entities.Action;
-import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.game_object.entities.Action;
+import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.util.Pair;
-import com.tumble.tank5.world_logic.Game;
+import com.tumble.tank5.world_logic.game_n_world.Game;
 
 /**
  * Represents a suggested action input (either shooting, switching weapon or

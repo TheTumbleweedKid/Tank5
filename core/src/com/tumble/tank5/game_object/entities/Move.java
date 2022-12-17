@@ -1,11 +1,11 @@
-package com.tumble.tank5.entities;
+package com.tumble.tank5.game_object.entities;
 
 import java.util.Queue;
 
 import com.tumble.tank5.events.Event;
 import com.tumble.tank5.util.Position;
 import com.tumble.tank5.util.DirectionVector.Direction;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 public class Move {
 	public final Direction direction;
@@ -45,5 +45,10 @@ public class Move {
 		if (!interrupted) {
 			subject.setPosition(end);
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return "<Move: " + start + "->" + direction + "->" + end + ">";
 	}
 }

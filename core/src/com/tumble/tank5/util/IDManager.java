@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.tumble.tank5.world_logic.Game;
+import com.tumble.tank5.world_logic.game_n_world.Game;
 
 /**
  * Enforces the (hopefully) rigorous system of ID numbers for any and all

@@ -1,6 +1,6 @@
 package com.tumble.tank5.game_object;
 
-import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.util.Position;
 
 public abstract class GameObject {
@@ -58,6 +58,8 @@ public abstract class GameObject {
 	public final Entity getAttacker() {
 		return attacker;
 	}
+	
+	public abstract boolean isDead();
 	
 	@Override
 	public abstract String toString();

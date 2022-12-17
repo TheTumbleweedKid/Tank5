@@ -1,4 +1,4 @@
-package com.tumble.tank5.tiles;
+package com.tumble.tank5.game_object.tiles;
 
 import com.tumble.tank5.util.DirectionVector;
 import com.tumble.tank5.util.Position;

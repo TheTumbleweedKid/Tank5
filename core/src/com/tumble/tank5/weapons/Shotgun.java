@@ -5,10 +5,10 @@ import java.util.List;
 
 import com.tumble.tank5.events.FiringEvent;
 import com.tumble.tank5.events.MovementEvent;
-import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.game_object.tiles.Tile;
 import com.tumble.tank5.util.GameUtils;
 import com.tumble.tank5.util.Position;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 /**
  * Fires a spray of (simultaneous) bullets at a target cell (and probably to

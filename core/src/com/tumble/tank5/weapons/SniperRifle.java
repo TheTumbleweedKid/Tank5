@@ -1,7 +1,7 @@
 package com.tumble.tank5.weapons;
 
 import com.tumble.tank5.events.MovementEvent;
-import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.game_object.tiles.Tile;
 
 /**
  * Fires a single, high-damage bullet at a target cell after the firer has

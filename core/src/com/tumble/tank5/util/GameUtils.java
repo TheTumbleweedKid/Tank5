@@ -2,7 +2,7 @@ package com.tumble.tank5.util;
 
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
-import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.game_object.entities.Entity;
 
 public class GameUtils {
 	

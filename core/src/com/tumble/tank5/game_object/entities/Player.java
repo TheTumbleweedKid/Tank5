@@ -1,9 +1,9 @@
-package com.tumble.tank5.entities;
+package com.tumble.tank5.game_object.entities;
 
-import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.game_object.tiles.Tile;
 import com.tumble.tank5.util.Position;
 import com.tumble.tank5.weapons.Weapon;
-import com.tumble.tank5.world_logic.Game;
+import com.tumble.tank5.world_logic.game_n_world.Game;
 
 public class Player extends Entity {
 	private static final int STARTING_HEALTH = 100;

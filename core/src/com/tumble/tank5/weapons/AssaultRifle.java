@@ -1,7 +1,7 @@
 package com.tumble.tank5.weapons;
 
 import com.tumble.tank5.events.MovementEvent;
-import com.tumble.tank5.tiles.Tile;
+import com.tumble.tank5.game_object.tiles.Tile;
 
 /**
  * Fires a fast burst of bullets at a single cell as soon as the firer has

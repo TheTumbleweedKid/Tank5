@@ -1,17 +1,17 @@
-package com.tumble.tank5.entities;
+package com.tumble.tank5.game_object.entities;
 
 import com.tumble.tank5.game_object.GameObject;
-import com.tumble.tank5.tiles.StairCase;
-import com.tumble.tank5.tiles.Tile;
-import com.tumble.tank5.tiles.Tile.TileType;
+import com.tumble.tank5.game_object.tiles.StairCase;
+import com.tumble.tank5.game_object.tiles.Tile;
+import com.tumble.tank5.game_object.tiles.Tile.TileType;
 import com.tumble.tank5.util.DirectionVector;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.IDManager;
 import com.tumble.tank5.util.Position;
 import com.tumble.tank5.util.DirectionVector.Direction;
 import com.tumble.tank5.weapons.Weapon;
-import com.tumble.tank5.world_logic.Game;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.game_n_world.Game;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 /**
  * The core class of any mobile object in the game world. An entity is not a
@@ -220,8 +220,6 @@ public abstract class Entity extends GameObject {
 
 		return gW.tileAt(startPos).getType() == TileType.LADDER;
 	}
-
-	public abstract boolean isDead();
 	
 	public final boolean shouldRemove() {
 		return shouldRemove;

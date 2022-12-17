@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
-import com.tumble.tank5.entities.Entity;
-import com.tumble.tank5.entities.Move;
 import com.tumble.tank5.util.Position;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
+import com.tumble.tank5.game_object.entities.Entity;
+import com.tumble.tank5.game_object.entities.Move;
 import com.tumble.tank5.util.DirectionVector;
-import com.tumble.tank5.world_logic.GameWorld;
 
 public class MovementEvent extends Event {
 	public static final int MOVEMENT_TICKS = 10;
@@ -52,7 +52,7 @@ public class MovementEvent extends Event {
 	}
 
 	@Override
-	public boolean applicable(GameWorld gW, int currentTick) {
+	public boolean applicable(GameWorld gW, int currentTick, int roundNumber) {
 		return true;
 	}
 
@@ -73,6 +73,20 @@ public class MovementEvent extends Event {
 		}
 		
 		finished = true;
+	}
+
+	@Override
+	public String toString() {
+		String res = "{MovementEvent["
+				+ tickNumber
+				+ "] ("
+				+ eventType
+				+ "): ";
+		
+		for (Entity entity : moves.keySet())
+			res += "<" + entity + ", " + moves.get(entity) + ">, ";
+
+		return res.substring(0, res.length() - 2) + "}";
 	}
 
 	public static MovementEvent[] createMovementSeries(Map<Entity, DirectionVector> directions) {

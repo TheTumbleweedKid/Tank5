@@ -2,9 +2,9 @@ package com.tumble.tank5.events;
 
 import java.util.Queue;
 
-import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.util.Position;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 public class FiringEvent extends Event {
 	private Entity attacker;
@@ -20,13 +20,17 @@ public class FiringEvent extends Event {
 	}
 
 	@Override
-	public boolean applicable(GameWorld gW, int currentTick) {
-		return !attacker.isDead() && gW.entityAt(from) == attacker && currentTick >= tickNumber;
+	public boolean applicable(GameWorld gW, int currentTick, int roundNumber) {
+		return gW.hasEntity(attacker)
+				&& !attacker.isDead()
+				&& attacker.getWeapon() != null
+				&& attacker.getWeapon().ableToFire(roundNumber)
+				&& currentTick >= tickNumber;
 	}
 
 	@Override
 	public void apply(GameWorld gW, int currentTick, Queue<Event> eventStream) {
-		if (!attacker.isDead()) { // && attacker.getWeapon().ableToFire(roundNumber)) {
+		if (!attacker.isDead()) {
 			eventStream.offer(
 					new DamageEvent(
 							attacker,
@@ -37,5 +41,18 @@ public class FiringEvent extends Event {
 									to)));
 			finished = true;
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "{FiringEvent["
+				+ tickNumber
+				+ "] ("
+				+ attacker
+				+ "): "
+				+ from
+				+ "->"
+				+ to
+				+ "}";
 	}
 }

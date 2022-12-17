@@ -2,7 +2,7 @@ package com.tumble.tank5.testing;
 
 import org.junit.jupiter.api.Test;
 
-import com.tumble.tank5.world_logic.Game;
+import com.tumble.tank5.world_logic.game_n_world.Game;
 
 
 public class CoreTests {

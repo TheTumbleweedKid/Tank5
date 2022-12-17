@@ -2,9 +2,9 @@ package com.tumble.tank5.events;
 
 import java.util.Queue;
 
-import com.tumble.tank5.entities.Entity;
+import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.util.Position;
-import com.tumble.tank5.world_logic.GameWorld;
+import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 public class TriggerPullEvent extends Event {
 	private Entity attacker;
@@ -19,7 +19,7 @@ public class TriggerPullEvent extends Event {
 	}
 
 	@Override
-	public boolean applicable(GameWorld gW, int currentTick) {
+	public boolean applicable(GameWorld gW, int currentTick, int roundNumber) {
 		// Second condition only swaps one kind of inconsistent world state for another...
 		return !attacker.isDead() && gW.entityAt(positions[0]) == attacker;
 	}
@@ -33,5 +33,17 @@ public class TriggerPullEvent extends Event {
 			eventStream.offer(fE);
 		}
 		finished = true;
+	}
+
+	@Override
+	public String toString() {
+		String res = "{TriggerPullEvent["
+				+ tickNumber
+				+ "] ("
+				+ attacker
+				+ "): ";
+		for (Position pos : positions) res += pos + ", ";
+
+		return res.substring(0, res.length() - 2) + "}";
 	}
 }
