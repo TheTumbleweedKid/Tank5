@@ -30,17 +30,15 @@ public class FiringEvent extends Event {
 
 	@Override
 	public void apply(GameWorld gW, int currentTick, Queue<Event> eventStream) {
-		if (!attacker.isDead()) {
-			eventStream.offer(
-					new DamageEvent(
-							attacker,
-							attacker.getWeapon().fire(
-									attacker.getID(),
-									gW,
-									from,
-									to)));
-			finished = true;
-		}
+		eventStream.offer(
+				new DamageEvent(
+						attacker,
+						attacker.getWeapon().fire(
+								attacker.getID(),
+								gW,
+								from,
+								to)));
+		finished = true;
 	}
 
 	@Override

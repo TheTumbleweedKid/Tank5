@@ -11,7 +11,8 @@ import com.tumble.tank5.game_object.entities.Move;
 import com.tumble.tank5.util.DirectionVector;
 
 public class MovementEvent extends Event {
-	public static final int MOVEMENT_TICKS = 10;
+	/** <i>Must</i> be odd. */
+	public static final int MOVEMENT_TICKS = 11;
 
 	private enum MovementType {
 		START, MIDDLE, END

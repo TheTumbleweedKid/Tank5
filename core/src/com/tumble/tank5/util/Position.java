@@ -1,5 +1,6 @@
 package com.tumble.tank5.util;
 
+import com.tumble.tank5.events.MovementEvent;
 import com.tumble.tank5.game_object.tiles.Tile;
 
 /**
@@ -73,6 +74,17 @@ public class Position {
 	 */
 	public int getZ() {
 		return (int) Math.floor(z / Tile.TILE_SIZE);
+	}
+	
+	public Position step(DirectionVector.Direction dir, int numTimes) {
+		return step(dir.asVector(), numTimes);
+	}
+	
+	public Position step(DirectionVector dir, int numTimes) {
+		return new Position(
+				x + dir.getX() * numTimes / MovementEvent.MOVEMENT_TICKS,
+				y + dir.getY() * numTimes / MovementEvent.MOVEMENT_TICKS,
+				z + dir.getZ() * numTimes / MovementEvent.MOVEMENT_TICKS);
 	}
 	
 	public Position move(DirectionVector.Direction dir) {

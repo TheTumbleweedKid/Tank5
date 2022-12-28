@@ -1,14 +1,17 @@
 package com.tumble.tank5.world_logic.game_n_world;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import com.badlogic.gdx.utils.Queue;
-import com.tumble.tank5.game_object.GameObject;
+import com.tumble.tank5.events.Event;
 import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.game_object.tiles.Air;
 import com.tumble.tank5.game_object.tiles.Ladder;
+import com.tumble.tank5.game_object.tiles.Rubble;
 import com.tumble.tank5.game_object.tiles.StairCase;
 import com.tumble.tank5.game_object.tiles.Tile;
 import com.tumble.tank5.game_object.tiles.Wall;
@@ -40,7 +43,8 @@ public class GameWorld {
 	// Whether a map is currently loaded into the GameWorld.
 	private boolean loaded;
 	
-	private RubbleManager rubbleManager;
+	private Set<Rubble> rubble;
+	private Map<Tile, Entity> toRubblify;
 
 	/**
 	 * Creates a <code>GameWorld</code> for a <code>Game</code> to take place in.
@@ -54,15 +58,12 @@ public class GameWorld {
 
 		loaded = false;
 		
-		rubbleManager = new RubbleManager(this);
+		rubble = new HashSet<Rubble>();
+		toRubblify = new HashMap<Tile, Entity>();
 	}
 	
 	Set<Entity> getEntities() {
 		return Collections.unmodifiableSet(entities);
-	}
-	
-	public RubbleManager getRubbleManager() {
-		return rubbleManager;
 	}
 	
 	public boolean isLoaded() {
@@ -119,8 +120,6 @@ public class GameWorld {
 		}
 
 		worldDimensions = new int[] { mD.getXDimension(), mD.getYDimension(), mD.getZDimension() };
-		
-		rubbleManager.clear();
 		
 		loaded = true;
 		
@@ -219,6 +218,51 @@ public class GameWorld {
 	}
 	
 	/**
+	 * Rubblifies any destroyed <code>Tile</code>s and applies gravity to all
+	 * <code>Entities</code> and <code>Rubble Tile</code>s.
+	 * 
+	 * @param eventStream - the stream of <code>Event</code>s to add any new
+	 *                    <code>DamageEvent</code>s or <code>DeathEvent</code>s to.
+	 */
+	void cleanUp(java.util.Queue<Event> eventStream) {
+		// Rubblify any destroyed Tiles.
+		for (Tile tile : toRubblify.keySet()) {
+			Rubble rub = new Rubble(tile, tile.position, toRubblify.get(tile));
+			
+			setTile(tile.position, rub);
+			rubble.add(rub);
+		}
+		
+		Position below;
+		Tile tileBelow;
+		Entity entityBelow;
+		
+		for (Entity e : entities) {
+			if (!e.isFalling()) {
+				below = e.getFootPosition().step(Direction.DOWN, 1);
+				if (outOfBounds(below) || tileAt(below).stopsFalling()) {
+					
+				}
+			}
+		}
+	}
+	
+	public boolean requestRubblification(Tile tile, Entity attacker) {
+		if (tile == null
+				|| tile.getType() == TileType.AIR
+				|| tile.getType() == TileType.RUBBLE
+				|| !tile.equals(tileAt(tile.position))
+				|| !tile.isDead()
+				|| toRubblify.containsKey(tile)) return false;
+		toRubblify.put(tile, attacker);
+		return true;
+	}
+
+	public void clearDeadEntities() {
+		entities.removeIf((Entity e) -> e.isDead());
+	}
+	
+	/**
 	 * Finds out whether a given <code>Entity</code> exists in this
 	 * <code>GameWorld</code>.
 	 * 
@@ -298,10 +342,6 @@ public class GameWorld {
 			return null;
 
 		return tiles[(int) Math.floor(z / Tile.TILE_SIZE)][(int) Math.floor(y / Tile.TILE_SIZE)][(int) Math.floor(x / Tile.TILE_SIZE)];
-	}
-	
-	public void clearDeadEntities() {
-		entities.removeIf((Entity e) -> e.isDead());
 	}
 	
 	public Pair<Queue<GameObject>, Queue<Position>> getLineObstructions(Position from, Position to) {
@@ -387,6 +427,7 @@ public class GameWorld {
 				new Pair<Queue<GameObject>, Queue<Position>>(
 						new Queue<GameObject>(),
 						new Queue<Position>());
+		if (from.sameTile(to)) return hits;
 		
 		double from_x = from.x / Tile.TILE_SIZE;
 		double from_y = from.y / Tile.TILE_SIZE;

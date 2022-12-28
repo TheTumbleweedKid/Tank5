@@ -30,7 +30,7 @@ public class WorldTests {
 	 */
 	@Test
 	public void test_01() {
-		Game g = new Game(true, 1, 0);
+		Game g = new Game(true, 1);
 		
 		GameWorld gW = g.getWorld();
 
@@ -92,7 +92,7 @@ public class WorldTests {
 				"  W \n" +
 				"# W ";
 
-		Game g = new Game(true, 1, 0);
+		Game g = new Game(true, 1);
 		
 		GameWorld gW = g.getWorld();
 		
@@ -115,7 +115,7 @@ public class WorldTests {
 				"    \n" +
 				"    ";
 
-		Game g = new Game(true, 1, 0);
+		Game g = new Game(true, 1);
 		
 		GameWorld gW = g.getWorld();
 
@@ -171,7 +171,7 @@ public class WorldTests {
 				"     \n" +
 				"  #  ";
 
-		Game g = new Game(true, 1, 0);
+		Game g = new Game(true, 1);
 		
 		GameWorld gW = g.getWorld();
 
@@ -221,7 +221,7 @@ public class WorldTests {
 						0 * Tile.TILE_SIZE)
 		};
 		
-		Game g = new Game(true, 1, 0);
+		Game g = new Game(true, 1);
 		GameWorld gW = g.getWorld();
 
 		g.loadMap(new MapData(mapString));

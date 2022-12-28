@@ -6,10 +6,11 @@ import java.util.Set;
 
 import com.tumble.tank5.events.DeathEvent;
 import com.tumble.tank5.events.Event;
-import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.util.DirectionVector;
+import com.tumble.tank5.util.DirectionVector.Direction;
 import com.tumble.tank5.util.Position;
+import com.tumble.tank5.world_logic.game_n_world.GameObject;
 import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 /**
@@ -20,8 +21,6 @@ import com.tumble.tank5.world_logic.game_n_world.GameWorld;
  */
 public abstract class Tile extends GameObject {
 	public static final double TILE_SIZE = 10.0;
-	
-	protected static final DirectionVector NO_MOVEMENT = DirectionVector.Direction.NONE.asVector();
 	
 	private boolean hasDied = false;
 	
@@ -36,7 +35,9 @@ public abstract class Tile extends GameObject {
 		WALL,
 		LADDER,
 		STAIRS,
-		RUBBLE
+		RUBBLE,
+		/** Only to be used for record-keeping in the <code>Rubble</code> class. */
+		CORPSE
 	}
 	
 	public Tile(TileType type, Position pos, int health, int weight) {
@@ -79,11 +80,9 @@ public abstract class Tile extends GameObject {
 								attacker));
 			}
 		}
-		
-		gW.getRubbleManager().makeRubble(this, getAttacker(), eventStream);
+
 		hasDied = true;
-		
-		return true;
+		return gW.requestRubblification(this, getAttacker());
 	}
 
 	/**
@@ -130,8 +129,12 @@ public abstract class Tile extends GameObject {
 	 *           part of (no action will be taken if either does not exist in the
 	 *           given world).
 	 * 
+	 * @return <code>true</code> if this operation successfully removed the
+	 *         supporting <code>Tile</code>, this <code>Tile</code> no longer has
+	 *         any supports left, otherwise (including for invalid parameters)
+	 *         <code>false</code>.
 	 */
-	public boolean removeSupport(Tile t, GameWorld gW) {
+	private boolean removeSupport(Tile t, GameWorld gW) {
 		return this != Air.AIR
 				&& supportedBy.remove(t)
 				&& gW.tileAt(getPosition()) == this
@@ -142,7 +145,8 @@ public abstract class Tile extends GameObject {
 	public TileType getType() {
 		return type;
 	}
-	
+
+	@Override
 	public boolean isDead() {
 		return hasDied;
 	}

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.events.MovementEvent;
-import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.game_object.entities.Player;
 import com.tumble.tank5.game_object.tiles.Tile;
@@ -17,10 +16,11 @@ import com.tumble.tank5.weapons.DevWeapon;
 import com.tumble.tank5.weapons.Weapon;
 import com.tumble.tank5.world_logic.MapData;
 import com.tumble.tank5.world_logic.game_n_world.Game;
+import com.tumble.tank5.world_logic.game_n_world.GameObject;
 import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class WeaponTests2 {
+public class WeaponTests {
 	
 	private static final int WALL_HEALTH = new Wall(null).getHealth();
 	
@@ -30,8 +30,8 @@ public class WeaponTests2 {
 	Entity shooter;
 	Position shooterPos, shootAt;
 	
-	public WeaponTests2() {
-		g = new Game(true, 1, 0);
+	public WeaponTests() {
+		g = new Game(true, 1);
 		gW = g.getWorld();
 	
 		weapon = new DevWeapon(
@@ -166,7 +166,7 @@ public class WeaponTests2 {
 	
 	@Test
 	public void test_05() {
-		g = new Game(true, 1, 0);
+		g = new Game(true, 1);
 		
 		gW = g.getWorld();
 		
@@ -221,7 +221,7 @@ public class WeaponTests2 {
 	 */
 	@Test
 	public void test_20() {
-		g = new Game(true, 1, 0);
+		g = new Game(true, 1);
 		
 		gW = g.getWorld();
 		

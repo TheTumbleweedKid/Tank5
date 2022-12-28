@@ -2,9 +2,9 @@ package com.tumble.tank5.events;
 
 import java.util.Queue;
 
-import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.game_object.tiles.Tile;
+import com.tumble.tank5.world_logic.game_n_world.GameObject;
 import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 public class DeathEvent extends Event {
@@ -30,6 +30,8 @@ public class DeathEvent extends Event {
 		} else {
 			((Tile) victim).die(currentTick, attacker, gW, eventStream);
 		}
+		
+		finished = true;
 	}
 
 	@Override

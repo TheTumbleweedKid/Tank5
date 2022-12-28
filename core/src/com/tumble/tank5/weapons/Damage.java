@@ -1,11 +1,11 @@
 package com.tumble.tank5.weapons;
 
-import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.game_object.tiles.Tile;
 import com.tumble.tank5.game_object.tiles.Tile.TileType;
 import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.Position;
+import com.tumble.tank5.world_logic.game_n_world.GameObject;
 
 
 /**

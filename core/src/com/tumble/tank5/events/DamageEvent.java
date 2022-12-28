@@ -33,6 +33,8 @@ public class DamageEvent extends Event {
 								attacker));
 			}
 		}
+		
+		finished = true;
 	}
 	
 	@Override

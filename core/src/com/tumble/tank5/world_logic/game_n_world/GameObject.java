@@ -1,10 +1,12 @@
-package com.tumble.tank5.game_object;
+package com.tumble.tank5.world_logic.game_n_world;
 
 import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.util.Position;
 
 public abstract class GameObject {
 	protected Position position;
+	
+	int fallSpeed = 0;
 	
 	private int health = 0;
 	private Entity attacker;
@@ -27,7 +29,8 @@ public abstract class GameObject {
 	
 	/**
 	 * Permanently subtracts a given amount of damage from the
-	 * <code>GameObject</code>'s health pool.
+	 * <code>GameObject</code>'s health pool. Only sets this
+	 * <code>GameObject</code>'s attacker to the given attacker if damage was > 0.
 	 * 
 	 * @param damage   - the amount of damage to take. Values <= 0 will have no
 	 *                 effect.
@@ -45,6 +48,10 @@ public abstract class GameObject {
 		}
 		
 		return health <= 0;
+	}
+	
+	public boolean isFalling() {
+		return fallSpeed > 0;
 	}
 	
 	public final Position getPosition() {

@@ -1,6 +1,7 @@
 package com.tumble.tank5.game_object.tiles;
 
 import com.tumble.tank5.util.DirectionVector;
+import com.tumble.tank5.util.DirectionVector.Direction;
 import com.tumble.tank5.util.Position;
 
 public class StairCase extends Tile {
@@ -23,15 +24,17 @@ public class StairCase extends Tile {
 	
 	public DirectionVector getHeightChange(DirectionVector dir) {
 		if (upDirection.equals(dir)) {
-			return new DirectionVector(0, 0, 1);
+			return Direction.UP.asVector();
+		} else if (downDirection.equals(dir)) {
+			return Direction.DOWN.asVector();
 		}
 		
-		return new DirectionVector(0, 0, 0);
+		return Direction.NONE.asVector();
 	}
 
 	@Override
 	public boolean isObstruction(DirectionVector dir) {
-		return !(upDirection.equals(dir) || downDirection.equals(dir) || Tile.NO_MOVEMENT.equals(dir));
+		return !(upDirection.equals(dir) || downDirection.equals(dir) || Direction.NONE.asVector().equals(dir));
 	}
 
 	@Override

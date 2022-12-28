@@ -195,31 +195,31 @@ public class DirectionVector {
 	}
 	
 	public Direction asEnum() {
-		if (z == 1) {
+		if (z > 0) {
 			return Direction.UP;
-		} else if (z == -1) {
+		} else if (z < 0) {
 			return Direction.DOWN;
 		} else {
-			if (x == 1) {
-				if (y == 1) {
+			if (x > 0) {
+				if (y > 0) {
 					return Direction.NE;
-				} else if (y == -1) {
+				} else if (y < 0) {
 					return Direction.SE;
 				} else {
 					return Direction.E;
 				}
-			} else if (x == -1) {
-				if (y == 1) {
+			} else if (x < 0) {
+				if (y > 0) {
 					return Direction.NW;
-				} else if (y == -1) {
+				} else if (y < 0) {
 					return Direction.SW;
 				} else {
 					return Direction.W;
 				}
 			} else {
-				if (y == 1) {
+				if (y > 0) {
 					return Direction.N;
-				} else if (y == -1) {
+				} else if (y < 0) {
 					return Direction.S;
 				} else {
 					return Direction.NONE;

@@ -5,11 +5,11 @@ import java.util.List;
 
 import com.badlogic.gdx.utils.Queue;
 import com.tumble.tank5.events.MovementEvent;
-import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.game_object.tiles.Tile;
 import com.tumble.tank5.util.Pair;
 import com.tumble.tank5.util.Position;
+import com.tumble.tank5.world_logic.game_n_world.GameObject;
 import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 /**
@@ -40,35 +40,50 @@ public class RPG extends Weapon {
 		);
 		
 		blastDamage = 45;
-		blastRadius = 3 * Tile.TILE_SIZE;
+		blastRadius = 2 * Tile.TILE_SIZE;
 		
 		tileDamageBonus = 1.3;
 	}
 
 	@Override
-	public Damage[] fire(int ownerId, GameWorld gW, Position from, Position to) {		
+	public Damage[] fire(int ownerId, GameWorld gW, Position from, Position to) {
 		Pair<Queue<GameObject>, Queue<Position>> lineHits = gW.getLineObstructions(from, to);
 		
-		if (lineHits.first().size == 0) return new Damage[0]; // Do not detonate on a miss.
-		
-		GameObject hit = lineHits.first().first();
-		Position epicentre = lineHits.second().first();
+		Position epicentre = to;
 
 		List<Damage> damages = new ArrayList<Damage>();
 		
-		damages.add(
-				new Damage(
-						hit,
-						(int) (damage * (hit instanceof Entity ? 1 : tileDamageBonus)),
-						epicentre));
+		if (lineHits.first().size > 0) {
+			GameObject hit = lineHits.first().first();
+			epicentre = lineHits.second().first();
+	
+			damages.add(
+					new Damage(
+							hit,
+							(int) (damage * (
+							hit instanceof Entity ? epicentre.sameTile(to) ? 1 : 0.5 : tileDamageBonus)),
+							epicentre));
+		}
 		
-		// TODO: Make this less bloody primitive!
 		for (Pair<GameObject, Double> pair : gW.getSphereObstructions(epicentre, blastRadius)) {
+			int damageValue = (int) (
+					(int) (blastDamage * pair.second() / blastRadius) * (
+					pair.first() instanceof Entity
+							? 1 / Math.max(
+									1,
+									gW.getLineObstructions(epicentre, pair.first().getPosition())
+									.first().size)
+							: tileDamageBonus
+					)
+			);
+			
 			damages.add(
 					new Damage(
 							pair.first(),
-							(int) ((int) (blastDamage * pair.second() / blastRadius) * (hit instanceof Entity ? 1 : tileDamageBonus)),
-							pair.first().getPosition()));
+							damageValue,
+							pair.first().getPosition()
+					)
+			);
 		}
 		
 		return damages.toArray(new Damage[0]);

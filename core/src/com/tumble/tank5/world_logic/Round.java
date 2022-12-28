@@ -60,7 +60,7 @@ public class Round {
 	 *                     of durations.
 	 * 
 	 * @throws GameError if <code>baseDuration</code> < <code>amplitude</code> or
-	 *                   <code>period</code> == 0 (if you want no oscillations, set
+	 *                   <code>period</code> <= 0 (if you want no oscillations, set
 	 *                   <code>amplitude</code> = 0).
 	 */
 	public Round(int baseDuration, int amplitude, int phase, int period) {

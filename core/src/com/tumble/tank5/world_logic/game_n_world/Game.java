@@ -1,11 +1,16 @@
 package com.tumble.tank5.world_logic.game_n_world;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import com.tumble.tank5.events.DeathEvent;
 import com.tumble.tank5.events.Event;
 import com.tumble.tank5.events.MovementEvent;
+import com.tumble.tank5.events.ReloadEvent;
+import com.tumble.tank5.events.SwitchWeaponEvent;
 import com.tumble.tank5.events.TriggerPullEvent;
 import com.tumble.tank5.game_object.entities.Action;
 import com.tumble.tank5.game_object.entities.Entity;
@@ -32,7 +37,7 @@ public class Game {
 	 * <code>false</code> if it is client-side.
 	 */
 	public final boolean isServer;
-
+	
 	private int gameID;
 	// Used to make sure this Game is not considered equal to a Game that has
 	// already been registered under a gameID of 0 with the IDManager before it has
@@ -42,8 +47,7 @@ public class Game {
 	private GodEntity god;
 
 	private int minPlayers, playerCount;
-	private int patienceWait;
-
+	
 	private GameWorld world;
 	
 	public enum Phase {
@@ -60,7 +64,7 @@ public class Game {
 	private boolean started = false;
 
 	private Round round;
-	private int tickNumber;
+	private int patienceWait, tickNumber;
 	
 	private Map<Entity, DirectionVector> moves;
 	private Map<Entity, Action> actions;
@@ -81,17 +85,9 @@ public class Game {
 	 *                     <code>Game</code> should wait for to join before allowing
 	 *                     it to be started. Must be > 0.
 	 * 
-	 * @param patienceWait - how long to wait between the {@link Phase#ACCEPTANCE}
-	 *                     and {@link Phase#ENACTMENT} phases in a round (for
-	 *                     <code>Input</code>s and <code>Event</code>s to arrive
-	 *                     over the network). May be any <code>int</code>; values <
-	 *                     0 have the same effect as a value of 0 (no waiting <i>at
-	 *                     all</i> - not even waiting for the next call of the
-	 *                     {@link Game#update() method}).
-	 * 
 	 * @throws GameError if <code>minPlayers</code> <= 0.
 	 */
-	public Game(boolean isServer, int minPlayers, int patienceWait) {
+	public Game(boolean isServer, int minPlayers) {
 		this.isServer = isServer;
 
 		if (minPlayers <= 0) {
@@ -100,7 +96,7 @@ public class Game {
 
 		this.minPlayers = minPlayers;
 		playerCount = 0;
-
+		
 		IDManager.registerGame(this);
 		
 		god = new GodEntity(IDManager.nextID(this), this);
@@ -144,7 +140,8 @@ public class Game {
 	 * @param baseRoundDuration - the mean duration of each <code>Round</code> in a
 	 *                          full cycle.
 	 * 
-	 * @param amplitude
+	 * @param amplitude         - the maximum variation (positive or negative) from
+	 *                          the <code>baseRoundDuration</code>.
 	 * 
 	 * @param startingPhase     - the phase shift of the first <code>Round</code> in
 	 *                          the series.
@@ -153,14 +150,29 @@ public class Game {
 	 *                          (i.e., how many should pass before the same duration
 	 *                          re-occurs).
 	 * 
-	 * @see Round#Round(int, int, int, int) for full parameter T's & C's.
+	 * @param patienceWait      - how long to wait between the
+	 *                          {@link Phase#ACCEPTANCE} and {@link Phase#ENACTMENT}
+	 *                          phases in a round (for <code>Input</code>s and
+	 *                          <code>Event</code>s to arrive over the network). May
+	 *                          be any <code>int</code>; values < 0 have the same
+	 *                          effect as a value of 0 (no waiting <i>at all</i> -
+	 *                          not even waiting for the next call of the
+	 *                          {@link Game#update() method} - useful for testing).
+	 * 
+	 * @see Round#Round(int, int, int, int) for full <code>Round</code>-parameter
+	 *      T's & C's.
 	 * 
 	 * @return <code>true</code> if the <code>Game</code> was successfully started,
 	 *         or <code>false</code> if it was already in progress, doesn't have
 	 *         enough <code>Player</code>s joined to start, or has been given
 	 *         invalid <code>Round</code> parameters.
 	 */
-	public boolean start(int baseRoundDuration, int amplitude, int startingPhase, int period) {
+	public boolean start(
+			int baseRoundDuration,
+			int amplitude,
+			int startingPhase,
+			int period,
+			int patienceWait) {
 		if (playerCount < minPlayers) return false;
 		
 		try {
@@ -194,6 +206,7 @@ public class Game {
 	}
 	
 	public boolean loadMap(MapData mD) {
+		if (phase != Phase.PLAY_PAUSED) return false;
 		return world.loadWorld(mD);
 	}
 	
@@ -216,7 +229,12 @@ public class Game {
 		
 		if (entity instanceof Player) playerCount--;
 		
-		return entity.damage(5 * entity.getHealth(), god); // always true.
+		events.add(
+				new DeathEvent(
+						tickNumber,
+						entity,
+						god));
+		return true;
 	}
 
 	public boolean addInput(Input i) {
@@ -245,7 +263,18 @@ public class Game {
 		return false;
 	}
 
-	public void update() {
+	/**
+	 * 
+	 * 
+	 * @param logEvents - whether to return a (potentially) non-empty
+	 *                  <code>String[]</code> containing information about the
+	 *                  events that were processed.
+	 * 
+	 * @return
+	 */
+	public String[] update(boolean logEvents) {
+		List<String> eventsLog = new ArrayList<String>();
+		
 		if (round.isFinished()) {
 			if (phase == Phase.ACCEPTANCE) {
 				phase = Phase.PATIENCE; // Wait for extra Inputs and Events to come in.
@@ -254,12 +283,13 @@ public class Game {
 				
 				world.clearDeadEntities();
 				
-				return;
+				return eventsLog.toArray(new String[0]);
 			}
 			
 			if (phase == Phase.PATIENCE) {
-				if (System.currentTimeMillis() - patienceStart < patienceWait) return;
-				
+				if (System.currentTimeMillis() - patienceStart < patienceWait)
+					return eventsLog.toArray(new String[0]);
+
 				// Process first tick in this very call (won't wait for next update() call).
 				phase = Phase.ENACTMENT;
 				
@@ -273,10 +303,10 @@ public class Game {
 						events.offer(new TriggerPullEvent(entity, actions.get(entity).getPositions()));
 						break;
 					case SWITCH_WEAPON:
-						//events.offer(new SwitchWeaponEvent());
+						events.offer(new SwitchWeaponEvent(entity));
 						break;
 					case RELOAD:
-						//events.offer(new ReloadEvent());
+						events.offer(new ReloadEvent(entity));
 						break;
 					case NONE:
 						// Do nothing - only here to avoid incomplete-switch warnings!
@@ -290,6 +320,7 @@ public class Game {
 						events.peek().apply(world, tickNumber, events);
 						
 						if (events.peek().isFinished()) events.poll();
+						world.cleanUp(events);
 					}
 					tickNumber++;
 				} else {
@@ -300,6 +331,8 @@ public class Game {
 				}
 			}
 		}
+		
+		return eventsLog.toArray(new String[0]);
 	}
 
 	/**
@@ -318,6 +351,10 @@ public class Game {
 	
 	public Action getAction(Entity e) {
 		return actions.get(e);
+	}
+	
+	public Phase getPhase() {
+		return phase;
 	}
 	
 	public int getRoundNumber() {

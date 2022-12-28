@@ -1,6 +1,5 @@
 package com.tumble.tank5.game_object.entities;
 
-import com.tumble.tank5.game_object.GameObject;
 import com.tumble.tank5.game_object.tiles.StairCase;
 import com.tumble.tank5.game_object.tiles.Tile;
 import com.tumble.tank5.game_object.tiles.Tile.TileType;
@@ -11,6 +10,7 @@ import com.tumble.tank5.util.Position;
 import com.tumble.tank5.util.DirectionVector.Direction;
 import com.tumble.tank5.weapons.Weapon;
 import com.tumble.tank5.world_logic.game_n_world.Game;
+import com.tumble.tank5.world_logic.game_n_world.GameObject;
 import com.tumble.tank5.world_logic.game_n_world.GameWorld;
 
 /**
@@ -33,9 +33,6 @@ public abstract class Entity extends GameObject {
 	private Weapon[] weapons;
 	private int weaponIndex;
 
-	protected Position startPos;
-	protected DirectionVector plannedMove = new DirectionVector(0, 0, 0);
-	
 	protected boolean shouldRemove;
 
 	/**
@@ -95,7 +92,17 @@ public abstract class Entity extends GameObject {
 	}
 	
 	public abstract void spawn(Position pos);
+	
+	/**
+	 * Switches the <code>Entity</code>'s active <code>Weapon</code> to the next one
+	 * in its arsenal (going back to the start of the list if it runs off the end).
+	 */
+	public void switchWeapon() {
+		if (weapons.length < 2) return;
 		
+		if (++weaponIndex == weapons.length) weaponIndex = 0;
+	}
+	
 	/**
 	 * Attempts to add a new movement on top of whatever movement is already planned
 	 * for this <code>Entity</code> for the next turn.
@@ -110,10 +117,40 @@ public abstract class Entity extends GameObject {
 	public boolean canStep(Move move, GameWorld gW) {
 		if (move == null || gW == null || !gW.hasEntity(this))
 			return false;
+
+		DirectionVector moveVector = move.direction.asVector();
+		Tile currentFootTile = gW.tileAt(getFootPosition());
+
+		Position newCentrePos = position.step(moveVector, 1);
+		Position newFootPos = getFootPosition().step(moveVector, 1);
 		
+		if (move.direction == Direction.UP || move.direction == Direction.DOWN) {
+			Tile newTile = gW.tileAt(
+					move.direction == Direction.UP
+							? newCentrePos
+							: newFootPos);
+			return currentFootTile.getType() == TileType.LADDER && newTile != null && !newTile.isObstruction(moveVector);
+		}
 		
+		// Do StairCase altitude adjustments.
+		Tile belowNewFootTile = gW.tileAt(
+				newFootPos.step(Direction.DOWN, 1));
 		
-		return true;
+		// Going up StairCases:
+		if (currentFootTile.getType() == TileType.STAIRS
+				&& ((StairCase) currentFootTile).upDirection.equals(moveVector)) {
+			newCentrePos = newCentrePos.step(Direction.UP, 1);
+		}
+		// Going down StairCases (note that this can't push Entities through the bottom of the map):
+		if (belowNewFootTile != null
+				&& belowNewFootTile.getType() == TileType.STAIRS
+				&& ((StairCase) belowNewFootTile).downDirection.equals(moveVector)) {
+			newCentrePos = newCentrePos.step(Direction.DOWN, 1);
+		}
+		
+		// Check for obstructions.
+		Tile newTile = gW.tileAt(newCentrePos);
+		return newTile != null && !newTile.isObstruction(moveVector);
 	}
 	
 	/**
@@ -129,29 +166,40 @@ public abstract class Entity extends GameObject {
 		
 		if (direction == Direction.NONE) return true;
 
-		Tile currentTile = gW.tileAt(getPosition());
+		DirectionVector moveVector = direction.asVector();
+		Tile currentTile = gW.tileAt(position);
 		
-		Position newPos = getPosition().move(direction);
+		if (currentTile.isObstruction(moveVector)) return false;
+		
+		Position newPos = position.move(moveVector);
+		
+		if (direction == Direction.UP || direction == Direction.DOWN) {
+			Tile newTile = gW.tileAt(newPos);
+			return currentTile.getType() == TileType.LADDER && newTile != null && !newTile.isObstruction(moveVector);
+		}
+		
+		Position belowNewFootPos = getFootPosition().move(moveVector).step(Direction.DOWN, 1);
 
 		if (currentTile.getType() == TileType.STAIRS) {
-			newPos = newPos.move(((StairCase) currentTile).getHeightChange(direction.asVector()));
+			newPos = newPos.move(((StairCase) currentTile).getHeightChange(moveVector));
+			belowNewFootPos = belowNewFootPos.move(((StairCase) currentTile).getHeightChange(moveVector));
+		}
+		
+		Tile belowNewTile = gW.tileAt(belowNewFootPos);
+		
+		if (belowNewTile != null && belowNewTile.getType() == TileType.STAIRS) {
+			return ((StairCase) belowNewTile).downDirection.equals(moveVector);
 		}
 
 		Tile newTile = gW.tileAt(newPos);
 
-		if (newTile.isObstruction(direction.asVector()))
-			return false;
-
-		if ((direction == Direction.UP || direction == Direction.DOWN) && currentTile.getType() != TileType.LADDER)
-			return false;
-		
-		return true;
+		return (newTile.getType() != TileType.STAIRS && newTile.isObstruction(moveVector))
+				|| (newTile.getType() == TileType.STAIRS && ((StairCase) newTile).upDirection.equals(moveVector));
 	}
 
 	/**
-	 * Attempts to make an attack the planned action for this <code>Entity</code>
-	 * for the next turn. If the <code>Entity</code> can validly make an attack,
-	 * whatever existing action it had planned will be forgotten.
+	 * Return whether the <code>Entity</code> can validly make an attack next turn
+	 * using its active <code>Weapon</code>.
 	 * 
 	 * @param gW        - the <code>GameWorld</code> the <code>Entity</code> exists
 	 *                  in.
@@ -172,19 +220,18 @@ public abstract class Entity extends GameObject {
 			if (!weapons[weaponIndex].isInRange(positions[0], positions[i])) return false;
 		}
 		
-		return true;
+		return !isDead();
 	}
 
 	/**
-	 * Attempts to make a weapon-switch the planned action for this
-	 * <code>Entity</code> for the next turn. If the <code>Entity</code> can validly
-	 * switch its weapon, whatever existing action it had planned will be forgotten.
+	 * Return whether the <code>Entity</code> can validly switch which
+	 * <code>Weapon</code> it has active as an action (hint: it can't switch it it
+	 * has less than two <code>Weapon</code>s in its arsenal).
 	 * 
-	 * @return <code>true</code> if the weapon-switching was successfully planned,
-	 *         or <code>false</code> if it was invalid in some way.
+	 * @return <code>true</code> if the <code>Entity</code> is able to switch weapon, otherwise <code>false</code>.
 	 */
 	public final boolean canSwitchWeapon() {
-		return weaponIndex != -1 && weapons.length != 0;
+		return !isDead() && weapons.length >= 2;
 	}
 
 	/**
@@ -202,7 +249,7 @@ public abstract class Entity extends GameObject {
 	
 	/**
 	 * Find out whether this <code>Entity</code> is currently on a
-	 * <code>Ladder</code> in its <code>GameWorld</code>.
+	 * <code>Ladder</code> or <code>StairCase</code> in its <code>GameWorld</code>.
 	 * 
 	 * @param gW - the <code>GameWorld</code> this <code>Entity</code> exists in.
 	 * 
@@ -211,14 +258,15 @@ public abstract class Entity extends GameObject {
 	 *         <li>has been given its starting location (i.e., has a valid
 	 *         <code>Position</code> in the <code>GameWorld</code>)</li>
 	 *         <li>the <code>Tile</code> at the <code>Entity</code>'s location in
-	 *         the <code>GameWorld</code> is a <code>Ladder</code></li> (otherwise
-	 *         <code>false</code>).
+	 *         the <code>GameWorld</code> is a <code>Ladder</code> or
+	 *         <code>StairCase</code></li> (otherwise <code>false</code>).
 	 */
-	public final boolean onLadder(GameWorld gW) {
-		if (startPos == null || gW == null || !gW.hasEntity(this))
+	public final boolean onClimbingTile(GameWorld gW) {
+		if (getFootPosition() == null || gW == null || !gW.hasEntity(this))
 			return false;
 
-		return gW.tileAt(startPos).getType() == TileType.LADDER;
+		return gW.tileAt(getFootPosition()).getType() == TileType.LADDER
+				|| gW.tileAt(getFootPosition()).getType() == TileType.STAIRS;
 	}
 	
 	public final boolean shouldRemove() {
@@ -239,19 +287,10 @@ public abstract class Entity extends GameObject {
 		return radius;
 	}
 	
-	/**
-	 * Finds the <code>Position</code> that this <code>Entity</code> is currently
-	 * planning to move to on the next turn.
-	 * 
-	 * @return the <code>Position</code> that will move to (cannot be outside of the
-	 *         <code>GameWorld</code> this <code>Entity</code> is part of). May be
-	 *         <code>null</code> if the <code>Entity</code> has not been given a
-	 *         starting location yet.
-	 */
-	public Position getPlannedPosition() {
-		if (startPos == null) return null;
+	public final Position getFootPosition() {
+		if (position == null) return null;
 		
-		return startPos.move(plannedMove);
+		return new Position(position.x, position.y, position.z - 0.5 * Tile.TILE_SIZE);
 	}
 	
 	public Weapon getWeapon() {

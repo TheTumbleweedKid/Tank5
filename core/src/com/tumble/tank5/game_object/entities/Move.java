@@ -36,7 +36,9 @@ public class Move {
 	public void applyMiddle(Entity subject, GameWorld gW, int currentTick, Queue<Event> eventStream) {
 		if (!interrupted) {
 			if (subject.canStep(this, gW)) {
-				
+				subject.setPosition(subject.getPosition().step(direction, 1));
+			} else {
+				interrupted = true;
 			}
 		}
 	}

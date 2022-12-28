@@ -32,10 +32,12 @@ public abstract class Input {
 	}
 
 	/**
-	 * Applies this <code>Input</code> to the <code>GameWorld</code>, checking it is
+	 * Applies this <code>Input</code> to the given <code>Game</code>, checking it is
 	 * is valid. Should only be called by {@link Game#addInput(Input)}.
 	 * 
-	 * @param gW - the <code>GameWorld</code> to apply this <code>Input</code> to.
+	 * @param g - the <code>Game</code> to apply this <code>Input</code> to.
+	 *          <code>Input</code>s may not be cross-applicable between different
+	 *          <code>Game</code>s.
 	 * 
 	 * @return <code>true</code> if the <code>Input</code> was valid (applied
 	 *         successfully), or <code>false</code> if it wasn't.
