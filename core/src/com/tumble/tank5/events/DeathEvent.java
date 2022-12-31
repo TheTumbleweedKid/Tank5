@@ -27,6 +27,7 @@ public class DeathEvent extends Event {
 	public void apply(GameWorld gW, int currentTick, Queue<Event> eventStream) {
 		if (victim instanceof Entity) {
 			// Record kill somehow!
+			gW.requestCorpsification((Entity) victim, attacker);
 		} else {
 			((Tile) victim).die(currentTick, attacker, gW, eventStream);
 		}

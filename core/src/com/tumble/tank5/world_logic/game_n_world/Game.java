@@ -281,8 +281,6 @@ public class Game {
 				
 				patienceStart = round.getFinishTime();
 				
-				world.clearDeadEntities();
-				
 				return eventsLog.toArray(new String[0]);
 			}
 			
@@ -320,7 +318,7 @@ public class Game {
 						events.peek().apply(world, tickNumber, events);
 						
 						if (events.peek().isFinished()) events.poll();
-						world.cleanUp(events);
+						world.cleanUp(tickNumber, events);
 					}
 					tickNumber++;
 				} else {

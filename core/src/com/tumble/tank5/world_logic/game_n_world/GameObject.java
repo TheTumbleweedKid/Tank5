@@ -5,8 +5,9 @@ import com.tumble.tank5.util.Position;
 
 public abstract class GameObject {
 	protected Position position;
+	protected int weight = 1;
 	
-	int fallSpeed = 0;
+	boolean falling;
 	
 	private int health = 0;
 	private Entity attacker;
@@ -51,11 +52,15 @@ public abstract class GameObject {
 	}
 	
 	public boolean isFalling() {
-		return fallSpeed > 0;
+		return falling;
 	}
 	
 	public final Position getPosition() {
 		return position;
+	}
+	
+	public final int getWeight() {
+		return weight;
 	}
 	
 	public final int getHealth() {

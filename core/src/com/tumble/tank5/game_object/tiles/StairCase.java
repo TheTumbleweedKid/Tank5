@@ -44,7 +44,7 @@ public class StairCase extends Tile {
 
 	@Override
 	public boolean stopsFalling() {
-		return false;
+		return true;
 	}
 
 	@Override

@@ -79,6 +79,7 @@ public abstract class Entity extends GameObject {
 		this.entityID = game.isServer ? IDManager.nextID(game) : entityID;
 		
 		this.radius = radius;
+		weight = 1;
 		
 		this.weapons = weapons;
 		weaponIndex = weapons.length > 0 ? 0 : -1;

@@ -7,7 +7,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.badlogic.gdx.utils.Queue;
+import com.tumble.tank5.events.DamageEvent;
+import com.tumble.tank5.events.DeathEvent;
 import com.tumble.tank5.events.Event;
+import com.tumble.tank5.events.MovementEvent;
 import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.game_object.tiles.Air;
 import com.tumble.tank5.game_object.tiles.Ladder;
@@ -21,6 +24,7 @@ import com.tumble.tank5.util.GameError;
 import com.tumble.tank5.util.GameUtils;
 import com.tumble.tank5.util.Pair;
 import com.tumble.tank5.util.Position;
+import com.tumble.tank5.weapons.Damage;
 import com.tumble.tank5.world_logic.MapData;
 import com.tumble.tank5.util.DirectionVector.Direction;
 
@@ -45,6 +49,9 @@ public class GameWorld {
 	
 	private Set<Rubble> rubble;
 	private Map<Tile, Entity> toRubblify;
+	private Map<Entity, Entity> toCorpsify;
+	
+	private Map<GameObject, Pair<Double, Entity>> fallingObjects;
 
 	/**
 	 * Creates a <code>GameWorld</code> for a <code>Game</code> to take place in.
@@ -60,6 +67,9 @@ public class GameWorld {
 		
 		rubble = new HashSet<Rubble>();
 		toRubblify = new HashMap<Tile, Entity>();
+		toCorpsify = new HashMap<Entity, Entity>();
+		
+		fallingObjects = new HashMap<GameObject, Pair<Double, Entity>>();
 	}
 	
 	Set<Entity> getEntities() {
@@ -221,10 +231,13 @@ public class GameWorld {
 	 * Rubblifies any destroyed <code>Tile</code>s and applies gravity to all
 	 * <code>Entities</code> and <code>Rubble Tile</code>s.
 	 * 
+	 * @param currentTick - the current tick number (helpful if you don't know what
+	 *                    a 'tick' is).
+	 * 
 	 * @param eventStream - the stream of <code>Event</code>s to add any new
 	 *                    <code>DamageEvent</code>s or <code>DeathEvent</code>s to.
 	 */
-	void cleanUp(java.util.Queue<Event> eventStream) {
+	void cleanUp(int currentTick, java.util.Queue<Event> eventStream) {
 		// Rubblify any destroyed Tiles.
 		for (Tile tile : toRubblify.keySet()) {
 			Rubble rub = new Rubble(tile, tile.position, toRubblify.get(tile));
@@ -233,18 +246,199 @@ public class GameWorld {
 			rubble.add(rub);
 		}
 		
+		// Find out if there any Entities or Rubble Tiles who should be falling but aren't.
 		Position below;
 		Tile tileBelow;
-		Entity entityBelow;
 		
 		for (Entity e : entities) {
-			if (!e.isFalling()) {
+			if (!fallingObjects.containsKey(e)) {
 				below = e.getFootPosition().step(Direction.DOWN, 1);
-				if (outOfBounds(below) || tileAt(below).stopsFalling()) {
-					
+				tileBelow = tileAt(below);
+				
+				if (tileBelow != null
+						&& (!tileBelow.stopsFalling() || tileBelow.isFalling())
+						&& (!tileAt(e.position).stopsFalling() || tileAt(e.position).isFalling())) {
+					fallingObjects.put(
+							e,
+							new Pair<Double, Entity>(
+									e.getFootPosition().z,
+									null));
+					((GameObject) e).falling = true;
 				}
 			}
 		}
+		
+		for (Rubble rub : rubble) {
+			if (!fallingObjects.containsKey(rub)) {
+				below = rub.position.move(Direction.DOWN);
+				tileBelow = tileAt(below);
+				
+				if (tileBelow != null
+						&& (!tileBelow.stopsFalling() || tileBelow.isFalling())) {
+					fallingObjects.put(
+							rub,
+							new Pair<Double, Entity>(
+									rub.position.z,
+									null));
+					((GameObject) rub).falling = true;
+				}
+			}
+		}
+		
+		// Apply gravity to all the falling objects.
+		applyGravityToFallingObjects(currentTick, eventStream);
+	}
+	
+	private void applyGravityToFallingObjects(int currentTick, java.util.Queue<Event> eventStream) {
+		Position below, oldBelow;
+		Tile tileBelow;
+		Entity entityBelow;
+		
+		for (GameObject gO : fallingObjects.keySet()) {
+			double initialAltitude = fallingObjects.get(gO).first();
+			Entity alreadyHit = fallingObjects.get(gO).second();
+			
+			below = (gO instanceof Entity ? ((Entity) gO).getFootPosition() : gO.position).step(Direction.DOWN, 1);
+			
+			// Essentially displacement.
+			int numTilesFallen = (int) ((initialAltitude - below.z) / Tile.TILE_SIZE);
+			// Essentially velocity.
+			int numIterations = Math.max(
+					1,
+					(int) Math.min(
+							2 * (numTilesFallen + 1) * 0.05 * MovementEvent.MOVEMENT_TICKS,
+							0.9 * MovementEvent.MOVEMENT_TICKS));
+			
+			for (int i = 0; i < numIterations; i++) {
+				oldBelow = below;
+				
+				below = below.step(Direction.DOWN, 1);
+				tileBelow = tileAt(below);
+				entityBelow = entityAt(below);
+				
+				if (oldBelow.getZ() != below.getZ()) alreadyHit = null;
+				
+				numTilesFallen = (int) ((initialAltitude - below.z) / Tile.TILE_SIZE);
+				
+				if (entityBelow != null && !entityBelow.isFalling() && entityBelow != alreadyHit) {
+					if (gO instanceof Entity) {
+						// Deal reduced fall damage to the falling Entity.
+						eventStream.add(
+								new DamageEvent(
+										gO.getAttacker(),
+										new Damage(
+												gO,
+												7 * numTilesFallen * numTilesFallen,
+												oldBelow)));
+						// Deal full fall damage to the crushed Entity.
+						eventStream.add(
+								new DamageEvent(
+										(Entity) gO,
+										new Damage(
+												entityBelow,
+												10 * numTilesFallen * numTilesFallen,
+												below)));
+					} else {
+						// Deal full fall damage to the crushed Entity.
+						eventStream.add(
+								new DamageEvent(
+										gO.getAttacker(),
+										new Damage(
+												entityBelow,
+												10 * numTilesFallen * numTilesFallen,
+												below)));
+					}
+				}
+				
+				// below.z < 0 -> tileBelow == null
+				if (tileBelow == null || (tileBelow.stopsFalling() && !tileBelow.isFalling())) {
+					// Landed on a Tile.
+					if (gO instanceof Entity) {
+						eventStream.add(
+								new DamageEvent(
+										gO.getAttacker(),
+										new Damage(
+												gO,
+												10 * numTilesFallen * numTilesFallen,
+												oldBelow)));
+						
+						// Stop the Entity falling.
+						gO.falling = false;
+						break;
+					} else if (tileBelow.getType() == TileType.RUBBLE) {
+						// Rubble landed on Rubble Tile.
+						setTile(
+								below,
+								((Rubble) tileBelow).combine((Rubble) gO));
+						
+						// If the combined Rubble pile is now an obstruction, kill any trapped Entities.
+						if (tileAt(below).getWeight() >= Rubble.OBSTRUCTIVE_THRESHOLD) {
+							for (Entity e : entities) {
+								if (e.position.sameTile(below) && !e.isDead()) {
+									eventStream.add(
+											new DeathEvent(
+													currentTick,
+													e,
+													gO.getAttacker()));
+								}
+							}
+						}
+						
+						// If there is a Tile beneath the fallen-on Rubble, deal some fall damage.
+						Tile rubbleRestingOn = tileAt(below.move(Direction.DOWN));
+						if (rubbleRestingOn != null) {
+							eventStream.add(
+									new DamageEvent(
+											gO.getAttacker(),
+											new Damage(
+													rubbleRestingOn,
+													gO.weight * (numTilesFallen + 1),
+													below)));
+						}
+						
+						// Stop the Rubble falling.
+						gO.falling = false;
+						break;
+					} else {
+						// Rubble landed on a non-Rubble Tile.
+						setTile(
+								oldBelow,
+								(Tile) gO);
+						
+						// Deal fall damage to the landed-on Tile.
+						eventStream.add(
+								new DamageEvent(
+										gO.getAttacker(),
+										new Damage(
+												tileBelow,
+												gO.weight * numTilesFallen * numTilesFallen,
+												below)));
+						
+						// If the Rubble pile is an obstruction, kill any trapped Entities.
+						if (gO.weight >= Rubble.OBSTRUCTIVE_THRESHOLD) {
+							for (Entity e : entities) {
+								if (e.position.sameTile(below) && !e.isDead()) {
+									eventStream.add(
+											new DeathEvent(
+													currentTick,
+													e,
+													gO.getAttacker()));
+								}
+							}
+						}
+						
+						// Stop the Rubble falling.
+						gO.falling = false;
+						break;
+					}
+				}
+				
+				gO.position = below;
+				if (gO instanceof Tile) setTile(below, (Tile) gO);
+			}
+		}
+		
+		fallingObjects.keySet().removeIf((GameObject key) -> fallingObjects.get(key).first() < 0);
 	}
 	
 	public boolean requestRubblification(Tile tile, Entity attacker) {
@@ -257,9 +451,21 @@ public class GameWorld {
 		toRubblify.put(tile, attacker);
 		return true;
 	}
+	
+	public boolean requestCorpsification(Entity dead, Entity attacker) {
+		if (dead == null
+				|| !dead.isDead()
+				|| toCorpsify.containsKey(dead)) return false;
+		
+		boolean foundEntity = false;
 
-	public void clearDeadEntities() {
-		entities.removeIf((Entity e) -> e.isDead());
+		for (Entity e : entities)
+			if (dead.equals(e))
+				foundEntity = true;
+
+		if (foundEntity) toCorpsify.put(dead, attacker);
+		
+		return foundEntity;
 	}
 	
 	/**
@@ -299,12 +505,23 @@ public class GameWorld {
 		if (position == null || outOfBounds(position))
 			return null;
 
+		Entity closest = null;
+		double leastDist = 0;
+		
 		for (Entity e : entities) {
-			if (!e.isDead() && position.sameTile(e.getPosition()))
-				return e;
+			if (!e.isDead() && position.sameTile(e.getPosition())) {
+				double dist = Tile.TILE_SIZE * (
+						(position.x - e.getPosition().x) * (position.x - e.getPosition().x) + 
+						(position.y - e.getPosition().y) * (position.y - e.getPosition().y) +
+						(position.z - e.getPosition().z) * (position.z - e.getPosition().z));
+				if (closest == null || dist < leastDist) {
+					leastDist = dist;
+					closest = e;
+				}
+			}
 		}
 
-		return null;
+		return closest;
 	}
 
 	/**

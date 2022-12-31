@@ -8,7 +8,6 @@ import com.tumble.tank5.events.DeathEvent;
 import com.tumble.tank5.events.Event;
 import com.tumble.tank5.game_object.entities.Entity;
 import com.tumble.tank5.util.DirectionVector;
-import com.tumble.tank5.util.DirectionVector.Direction;
 import com.tumble.tank5.util.Position;
 import com.tumble.tank5.world_logic.game_n_world.GameObject;
 import com.tumble.tank5.world_logic.game_n_world.GameWorld;
@@ -28,11 +27,11 @@ public abstract class Tile extends GameObject {
 	private Set<Tile> supportedBy = new HashSet<Tile>();
 
 	private TileType type;
-	protected int weight;
 
 	public enum TileType {
 		AIR,
 		WALL,
+		CEILING,
 		LADDER,
 		STAIRS,
 		RUBBLE,

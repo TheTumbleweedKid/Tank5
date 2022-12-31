@@ -12,7 +12,7 @@ import com.tumble.tank5.util.DirectionVector;
 
 public class MovementEvent extends Event {
 	/** <i>Must</i> be odd. */
-	public static final int MOVEMENT_TICKS = 11;
+	public static final int MOVEMENT_TICKS = 21;
 
 	private enum MovementType {
 		START, MIDDLE, END
