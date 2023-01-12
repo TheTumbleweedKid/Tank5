@@ -240,10 +240,9 @@ public class GameWorld {
 	void cleanUp(int currentTick, java.util.Queue<Event> eventStream) {
 		// Rubblify any destroyed Tiles.
 		for (Tile tile : toRubblify.keySet()) {
-			Rubble rub = new Rubble(tile, tile.position, toRubblify.get(tile));
+			rubble.add(new Rubble(tile, tile.position, toRubblify.get(tile)));
 			
-			setTile(tile.position, rub);
-			rubble.add(rub);
+			setTile(tile.position, Air.AIR);
 		}
 		
 		// Find out if there any Entities or Rubble Tiles who should be falling but aren't.
@@ -270,7 +269,7 @@ public class GameWorld {
 		
 		for (Rubble rub : rubble) {
 			if (!fallingObjects.containsKey(rub)) {
-				below = rub.position.move(Direction.DOWN);
+				below = rub.getFootPosition().step(Direction.DOWN, 1);
 				tileBelow = tileAt(below);
 				
 				if (tileBelow != null
@@ -278,7 +277,7 @@ public class GameWorld {
 					fallingObjects.put(
 							rub,
 							new Pair<Double, Entity>(
-									rub.position.z,
+									rub.getFootPosition().z,
 									null));
 					((GameObject) rub).falling = true;
 				}
@@ -296,9 +295,8 @@ public class GameWorld {
 		
 		for (GameObject gO : fallingObjects.keySet()) {
 			double initialAltitude = fallingObjects.get(gO).first();
-			Entity alreadyHit = fallingObjects.get(gO).second();
 			
-			below = (gO instanceof Entity ? ((Entity) gO).getFootPosition() : gO.position).step(Direction.DOWN, 1);
+			below = gO.getFootPosition().step(Direction.DOWN, 1);
 			
 			// Essentially displacement.
 			int numTilesFallen = (int) ((initialAltitude - below.z) / Tile.TILE_SIZE);
@@ -315,12 +313,13 @@ public class GameWorld {
 				below = below.step(Direction.DOWN, 1);
 				tileBelow = tileAt(below);
 				entityBelow = entityAt(below);
-				
-				if (oldBelow.getZ() != below.getZ()) alreadyHit = null;
+
+				if (oldBelow.getZ() != below.getZ())
+					fallingObjects.put(gO, new Pair<Double, Entity>(initialAltitude, null));
 				
 				numTilesFallen = (int) ((initialAltitude - below.z) / Tile.TILE_SIZE);
 				
-				if (entityBelow != null && !entityBelow.isFalling() && entityBelow != alreadyHit) {
+				if (entityBelow != null && !entityBelow.isFalling() && entityBelow != fallingObjects.get(gO).second()) {
 					if (gO instanceof Entity) {
 						// Deal reduced fall damage to the falling Entity.
 						eventStream.add(
@@ -348,11 +347,19 @@ public class GameWorld {
 												10 * numTilesFallen * numTilesFallen,
 												below)));
 					}
+
+					fallingObjects.put(gO, new Pair<Double, Entity>(initialAltitude, entityBelow));
 				}
 				
 				// below.z < 0 -> tileBelow == null
-				if (tileBelow == null || (tileBelow.stopsFalling() && !tileBelow.isFalling())) {
+				if (tileBelow == null
+						|| (tileBelow.stopsFalling() && !tileBelow.isFalling() && !tileBelow.equals(gO))) {
 					// Landed on a Tile.
+					gO.position = new Position(
+							gO.position.x,
+							gO.position.y,
+							(gO.position.getZ() + 0.5) * Tile.TILE_SIZE);
+					
 					if (gO instanceof Entity) {
 						eventStream.add(
 								new DamageEvent(
@@ -361,7 +368,6 @@ public class GameWorld {
 												gO,
 												10 * numTilesFallen * numTilesFallen,
 												oldBelow)));
-						
 						// Stop the Entity falling.
 						gO.falling = false;
 						break;
@@ -433,8 +439,11 @@ public class GameWorld {
 					}
 				}
 				
-				gO.position = below;
-				if (gO instanceof Tile) setTile(below, (Tile) gO);
+				gO.position = new Position(
+						below.x,
+						below.y,
+						below.z + 0.5 * Tile.TILE_SIZE);
+				//if (gO instanceof Tile) setTile(below, (Tile) gO);
 			}
 		}
 		

@@ -1,6 +1,7 @@
 package com.tumble.tank5.world_logic.game_n_world;
 
 import com.tumble.tank5.game_object.entities.Entity;
+import com.tumble.tank5.game_object.tiles.Tile;
 import com.tumble.tank5.util.Position;
 
 public abstract class GameObject {
@@ -57,6 +58,12 @@ public abstract class GameObject {
 	
 	public final Position getPosition() {
 		return position;
+	}
+	
+	public final Position getFootPosition() {
+		if (position == null) return null;
+		
+		return new Position(position.x, position.y, position.z - 0.5 * Tile.TILE_SIZE);
 	}
 	
 	public final int getWeight() {

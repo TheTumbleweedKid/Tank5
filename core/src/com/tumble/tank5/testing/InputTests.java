@@ -1,6 +1,8 @@
 package com.tumble.tank5.testing;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -104,8 +106,8 @@ public class InputTests {
 	// Basic horizontal EntityMove Inputs:
 
 	/**
-	 * Check that valid cardinal-direction movement <code>Input</code>s are accepted
-	 * by the <code>Game</code> and correctly applied to the <code>GameWorld</code>.
+	 * Check that valid movement <code>Input</code>s are accepted by the
+	 * <code>Game</code> and correctly applied to the <code>GameWorld</code>.
 	 */
 	@Test
 	public void test_02() {
@@ -123,7 +125,7 @@ public class InputTests {
 						0.5 * Tile.TILE_SIZE,
 						0.5 * Tile.TILE_SIZE,
 						0.5 * Tile.TILE_SIZE));
-		g.start(50, 0, 0, 1, 0); // 50 ms acceptance phase
+		g.start(50, 0, 0, 1, 0); // 50ms acceptance phase
 		
 		Map<Direction, Pair<String, Position>> mapStates = new HashMap<Direction, Pair<String, Position>>();
 		
@@ -183,9 +185,8 @@ public class InputTests {
 	}
 
 	/**
-	 * Check that off-map cardinal-direction movement <code>Input</code>s are
-	 * rejected by the <code>Game</code> and not applied to the
-	 * <code>GameWorld</code>.
+	 * Check that off-map movement <code>Input</code>s are rejected by the
+	 * <code>Game</code> and not applied to the <code>GameWorld</code>.
 	 */
 	@Test
 	public void test_03() {
@@ -203,7 +204,7 @@ public class InputTests {
 		g.addEntity(
 				players[0],
 				playerPos);
-		g.start(50, 0, 0, 1, 0); // 50 ms acceptance phase
+		g.start(50, 0, 0, 1, 0); // 50ms acceptance phase
 		
 		Direction[] directions = {Direction.N, Direction.E, Direction.S, Direction.W};
 		
@@ -226,9 +227,8 @@ public class InputTests {
 	}
 	
 	/**
-	 * Check that blocked cardinal-direction movement <code>Input</code>s are
-	 * rejected by the <code>Game</code> and not applied to the
-	 * <code>GameWorld</code>.
+	 * Check that blocked movement <code>Input</code>s are rejected by the
+	 * <code>Game</code> and not applied to the <code>GameWorld</code>.
 	 */
 	@Test
 	public void test_04() {
@@ -248,7 +248,7 @@ public class InputTests {
 		g.addEntity(
 				players[0],
 				playerPos);
-		g.start(50, 0, 0, 1, 0); // 50 ms acceptance phase
+		g.start(50, 0, 0, 1, 0); // 50ms acceptance phase
 		
 		Direction[] directions = {Direction.N, Direction.E, Direction.S, Direction.W};
 		
@@ -274,44 +274,228 @@ public class InputTests {
 	}
 	
 	// Basic vertical EntityMove Inputs:
-
+	
 	/**
-	 * Check that valid <code>Ladder</code>-based movement <code>Input</code>s are
-	 * accepted by the <code>Game</code> and correctly applied to the
+	 * Check that <code>Ladder</code>-mounting movement <code>Input</code>s are
+	 * accepted/rejected by the <code>Game</code> and correctly applied/not applied to the
 	 * <code>GameWorld</code>.
 	 */
 	@Test
 	public void test_05() {
-		// Set up Game and single Player.
-		g = new Game(true, 1);
+		// Set up Game and multiple Players.
+		g = new Game(true, 4);
 		g.loadMap(new MapData(
+				"   \n" +
+				" # \n" +
+				"   "));
+		players = new Player[] {
+				new Player(g, IDManager.nextID(g), "A"),
+				new Player(g, IDManager.nextID(g), "B"),
+				new Player(g, IDManager.nextID(g), "C"),
+				new Player(g, IDManager.nextID(g), "D")
+		};
+		Position[] spawns = {
+				new Position(
+						1.5 * Tile.TILE_SIZE,
+						0.5 * Tile.TILE_SIZE,
+						0.5 * Tile.TILE_SIZE),
+				new Position(
+						0.5 * Tile.TILE_SIZE,
+						1.5 * Tile.TILE_SIZE,
+						0.5 * Tile.TILE_SIZE),
+				new Position(
+						2.5 * Tile.TILE_SIZE,
+						1.5 * Tile.TILE_SIZE,
+						0.5 * Tile.TILE_SIZE),
+				new Position(
+						1.5 * Tile.TILE_SIZE,
+						2.5 * Tile.TILE_SIZE,
+						0.5 * Tile.TILE_SIZE)
+		};
+		
+		Direction[][] moves = {
+				{
+					Direction.N,
+					Direction.S
+				},
+				{
+					Direction.W,
+					Direction.E
+				},
+				{
+					Direction.E,
+					Direction.W
+				}
+		};
+		String defaultState =
+				" D \n" +
+				"C#B\n" +
+				" A ";
+		String[] mapStates = {
+					" D \n" +
+					"BAC\n" +
+					"   ",
+					" D \n" +
+					" BC\n" +
+					" A ",
+					" D \n" +
+					"BC \n" +
+					" A "
+		};
+		Position[][] positions = {
+				{
+					spawns[0].move(Direction.N),
+					spawns[0]
+				},
+				{
+					spawns[1].move(Direction.E),
+					spawns[1]
+				},
+				{
+					spawns[2].move(Direction.W),
+					spawns[2]
+				}
+		};
+		
+		for (int i = 0; i < players.length; i++) g.addEntity(players[i], spawns[i]);
+		
+		g.start(50, 0, 0, 1, 0); // 50ms acceptance phase
+		
+		// moves.length != players.length !!!
+		for (int i = 0; i < moves.length; i++) {
+			for (int j = 0; j < moves[i].length; j++) {
+				assert g.addInput(
+						new EntityMove(
+								System.currentTimeMillis(),
+								players[i],
+								moves[i][j].asVector()));
+				
+				assert g.getMove(players[i]).equals(moves[i][j].asVector());
+				
+				// Let the round pass
+				while (g.getPhase() == Phase.ACCEPTANCE) g.update(false);
+				while (g.getPhase() == Phase.ENACTMENT) g.update(false);
+				
+				if (j % 2 == 0) {
+					assert g.getWorld().toString().equals(mapStates[i]);
+				} else {
+					assert g.getWorld().toString().equals(defaultState);
+				}
+				
+				assert g.getWorld().entityAt(positions[i][j]) == players[i];
+			}
+		}
+		
+		// Check that 'D' can't move south through the bars of the Ladder.
+		
+		assert g.addInput(
+				new EntityMove(
+						System.currentTimeMillis(),
+						players[3],
+						Direction.S.asVector()));
+		
+		assert g.getMove(players[3]) == null;
+		
+		// Let the round pass
+		while (g.getPhase() == Phase.ACCEPTANCE) g.update(false);
+		while (g.getPhase() == Phase.ENACTMENT) g.update(false);
+		
+		assert g.getWorld().toString().equals(defaultState);
+		assert g.getWorld().entityAt(spawns[3]) == players[3];
+	}
+
+	/**
+	 * Check that valid <code>Ladder</code>-related movement <code>Input</code>s are
+	 * accepted by the <code>Game</code> and correctly applied to the
+	 * <code>GameWorld</code>.
+	 */
+	@Test
+	public void test_017() {
+		List<String> floors = new ArrayList<String>();
+		
+		floors.add(
+				"   \n" +
+				" # \n" +
+				"   ");
+		floors.add(
+				"   \n" +
+				" # \n" +
+				"   ");
+		floors.add(
 				" W \n" +
 				"W#W\n" +
-				" W " +
-				"~" +
-				"  "));
+				" W ");
+		floors.add(
+				"   \n" +
+				"   \n" +
+				"   ");
+		// Set up Game and single Player.
+		g = new Game(true, 1);
+		g.loadMap(new MapData(String.join("~", floors)));
 		
 		players = new Player[] {new Player(g, IDManager.nextID(g), "A")};
 		
 		g.addEntity(
 				players[0],
 				new Position(
-						0.5 * Tile.TILE_SIZE,
+						1.5 * Tile.TILE_SIZE,
 						0.5 * Tile.TILE_SIZE,
 						0.5 * Tile.TILE_SIZE));
-		g.start(50, 0, 0, 1, 0); // 50 ms acceptance phase
+		g.start(50, 0, 0, 1, 0); // 50ms acceptance phase
 		
-		Map<Direction, Pair<String, Position>> mapStates = new HashMap<Direction, Pair<String, Position>>();
+		Direction[] moves = {
+				Direction.N, // Mount the ladder from the south (heading north)
+				Direction.S, // Dismount to the south
+				Direction.W,
+				Direction.N,
+				Direction.E, // Mount the ladder from the west (heading east)
+				Direction.W, // Dismount to the west
+				Direction.S,
+				Direction.E,
+				Direction.E,
+				Direction.N,
+				Direction.W, // Mount the ladder from the east (heading west)
+				
+				Direction.UP,
+				Direction.NONE,
+				Direction.DOWN, // Back down to ground
+				Direction.UP,
+				Direction.UP,
+				Direction.UP, // Standing on top of the ladder:
+				Direction.N, // Step off to the north.
+				Direction.S,
+				Direction.E, // Step off to the east.
+				Direction.W,
+				Direction.S,  // Step off to the south.
+				Direction.N,
+				Direction.W, // Step off to the west.
+				Direction.E,
+				Direction.DOWN,
+				
+		};
+		
+		String swappedFloor = floors.set(
+				0,
+				"   \n" +
+				" A \n" +
+				"   ");
 		
 		mapStates.put(
 				Direction.N,
 				new Pair<String, Position>(
-						"A \n" +
-						"  ",
+						String.join("~", floors),
 						new Position(
 								0.5 * Tile.TILE_SIZE,
 								1.5 * Tile.TILE_SIZE,
 								0.5 * Tile.TILE_SIZE)));
+		
+		floors.set(0, swappedFloor);
+		swappedFloor = floors.set(
+				1,
+				"   \n" +
+				" A \n" +
+				"   ");
+		
 		mapStates.put(
 				Direction.E,
 				new Pair<String, Position>(
@@ -321,6 +505,14 @@ public class InputTests {
 								1.5 * Tile.TILE_SIZE,
 								1.5 * Tile.TILE_SIZE,
 								0.5 * Tile.TILE_SIZE)));
+		
+		floors.set(1, swappedFloor);
+		swappedFloor = floors.set(
+				2,
+				" W \n" +
+				"WAW\n" +
+				" W ");
+		
 		mapStates.put(
 				Direction.S,
 				new Pair<String, Position>(

@@ -125,12 +125,39 @@ public abstract class Entity extends GameObject {
 		Position newCentrePos = position.step(moveVector, 1);
 		Position newFootPos = getFootPosition().step(moveVector, 1);
 		
-		if (move.direction == Direction.UP || move.direction == Direction.DOWN) {
+		// Ladder movements.
+		if (move.direction == Direction.UP) {
 			Tile newTile = gW.tileAt(
 					move.direction == Direction.UP
 							? newCentrePos
 							: newFootPos);
 			return currentFootTile.getType() == TileType.LADDER && newTile != null && !newTile.isObstruction(moveVector);
+		}
+
+		if (move.direction == Direction.DOWN) {
+			Tile newTile = gW.tileAt(newFootPos);
+
+			// Invalid move!
+			if (newTile == null || newTile.isObstruction(moveVector))
+				return false;
+
+			if (currentFootTile.getType() == TileType.LADDER) {
+				// Drop off the bottom of a Ladder into empty space/climb down onto
+				// another Ladder below.
+				return true;
+			}
+
+			// Move from standing on top of a Ladder to climbing down onto it.
+			if (newTile.getType() == TileType.LADDER) {
+				return true;
+			}
+
+			// Keep moving down after having dropped off a Ladder into empty space.
+			Tile tileAbove = gW.tileAt(position.move(Direction.UP));
+			if (tileAbove != null && tileAbove.getType() == TileType.LADDER)
+				return true;
+
+			return false;
 		}
 		
 		// Do StairCase altitude adjustments.
@@ -149,20 +176,28 @@ public abstract class Entity extends GameObject {
 			newCentrePos = newCentrePos.step(Direction.DOWN, 1);
 		}
 		
-		// Check for obstructions.
+		// Check for obstructions/not moving off the map.
 		Tile newTile = gW.tileAt(newCentrePos);
-		return newTile != null && !newTile.isObstruction(moveVector);
+		if (newTile == null) return false;
+		
+		// Are we trying to enter/exit a Ladder through its bars?
+		if ((newTile.getType() == TileType.LADDER && newTile.isObstruction(moveVector.reverse())
+				|| (currentFootTile.getType() == TileType.LADDER && currentFootTile.isObstruction(moveVector))))
+			return false;
+		// For normal Tiles/move cases.
+		return !newTile.isObstruction(moveVector);
 	}
 	
 	/**
-	 * Should only be called during the input phase.
 	 * 
 	 * @param direction
+	 * 
 	 * @param gW
+	 * 
 	 * @return
 	 */
 	public boolean canMove(Direction direction, GameWorld gW) {
-		if (direction == null || gW == null || !gW.hasEntity(this))
+		if (direction == null || !direction.validEntityMove() || gW == null || !gW.hasEntity(this))
 			return false;
 		
 		if (direction == Direction.NONE) return true;
@@ -174,9 +209,28 @@ public abstract class Entity extends GameObject {
 		
 		Position newPos = position.move(moveVector);
 		
-		if (direction == Direction.UP || direction == Direction.DOWN) {
+		if (direction == Direction.UP) {
+			// Can only move up an (unobstructed) Ladder.
 			Tile newTile = gW.tileAt(newPos);
 			return currentTile.getType() == TileType.LADDER && newTile != null && !newTile.isObstruction(moveVector);
+		}
+		
+		if (direction == Direction.DOWN) {
+			Tile newTile = gW.tileAt(newPos);
+
+			// Drop off the bottom of a Ladder into empty space/climb down onto
+			// another Ladder below.
+			if (currentTile.getType() == TileType.LADDER && newTile != null && !newTile.isObstruction(moveVector))
+				return true;
+
+			// Move from standing on top of a Ladder to climbing down onto it.
+			return !currentTile.isObstruction(moveVector) && newTile != null && newTile.getType() == TileType.LADDER;
+		}
+		
+		if (currentTile.getType() == TileType.LADDER) {
+			Tile newTile = gW.tileAt(newPos);
+			return !currentTile.isObstruction(moveVector) && newTile != null && !newTile
+			
 		}
 		
 		Position belowNewFootPos = getFootPosition().move(moveVector).step(Direction.DOWN, 1);
@@ -286,12 +340,6 @@ public abstract class Entity extends GameObject {
 	
 	public final float getRadius() {
 		return radius;
-	}
-	
-	public final Position getFootPosition() {
-		if (position == null) return null;
-		
-		return new Position(position.x, position.y, position.z - 0.5 * Tile.TILE_SIZE);
 	}
 	
 	public Weapon getWeapon() {

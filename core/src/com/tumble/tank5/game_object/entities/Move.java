@@ -14,7 +14,7 @@ public class Move {
 	private boolean interrupted = false;
 
 	public Move(Direction direction, Position start, Position end) {
-		this.direction = direction;
+		this.direction = direction != null ? direction : Direction.NONE;
 
 		this.start = start;
 		this.end = end;

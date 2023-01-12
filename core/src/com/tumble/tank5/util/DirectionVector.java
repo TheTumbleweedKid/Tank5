@@ -40,6 +40,10 @@ public class DirectionVector {
 		public DirectionVector asVector() {
 			return new DirectionVector(this);
 		}
+
+		public boolean validEntityMove() {
+			return this == N || this == E || this == S || this == W || this == UP || this == DOWN || this == NONE;
+		}
 	}
 
 	/**
